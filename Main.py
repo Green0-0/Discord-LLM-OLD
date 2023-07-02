@@ -8,8 +8,8 @@ import discord
 from discord import ui, app_commands
 
 # Sets up bot
-TOKEN = "MTEyNDQ3ODE5NzczNjY4OTY5NA.G9kREQ.4Dl9Fxj7y9manpo2By9VxG-Zm4CUb5bp0AoCyE"
-GUILD = "1124478446492471426"
+TOKEN = ""
+GUILD = ""
 
 SuggestionModel = m.Character(0, "no memory", "Airoboros", "https://cdn.discordapp.com/embed/avatars/0.png", 0, 1.7, 0.95, 50, 1.2, 4000)
 
