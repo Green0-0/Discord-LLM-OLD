@@ -11,7 +11,7 @@ from discord import ui, app_commands
 TOKEN = ""
 GUILD = ""
 
-SuggestionModel = m.Character(0, "no memory", "Airoboros", "https://cdn.discordapp.com/embed/avatars/0.png", 0, 1.7, 0.95, 50, 1.2, 4000)
+SuggestionModel = m.Character(-1, "no memory", "Airoboros", "https://cdn.discordapp.com/embed/avatars/0.png", 0, 1.7, 0.95, 50, 1.2, 4000)
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -75,12 +75,12 @@ class create_character_modal(ui.Modal, title = "Character Creation"):
         # Checks if the icon URL is valid
         await interaction.response.defer()
         if not validators.url(self.icon.value):
-            await interaction.response.send_message("Invalid icon URL")
+            await interaction.channel.send("Invalid icon URL")
             return
         image_formats = ("image/png", "image/jpeg", "image/jpg")
         r = requests.head(self.icon)
         if r.headers["content-type"] not in image_formats:
-            await interaction.response.send_message("Invalid icon URL")
+            await interaction.channel.send("Invalid icon URL")
             return
         # Adds character to user character list and sets it to the current character, also attaches some default values to model parameters
         user = getUser(interaction.user)
@@ -359,12 +359,13 @@ class edit_profile_modal(ui.Modal, title = "Edit Profile"):
     def __init__(self, targetChar):
         super().__init__()
         self.targetChar = targetChar
-    description = ui.TextInput(label="Describe your character.", placeholder="Female? Male? Likes music? Relationship with the user?", default="CHARACTER is a ", required=True)
-    responsetype = ui.TextInput(label="How do the character and user interact?", placeholder="Are they helpful, annoyed, and will they have censorship?", default="CHARACTER gives responses that are ", required=False)
-    examples = ui.TextInput(label="Give some examples character responses.", placeholder="\"Tysm!! :) ^^\", \"Annoying, go away...\", etc", default="Some things CHARACTER might say include: ", required=False)
-    misc = ui.TextInput(label="Anything else?", required=False)
+        self.add_item(discord.ui.TextInput(label="Describe your character.", placeholder="Female? Male? Likes music? Relationship with the user?", default=targetChar.profile, required=True))
+        self.add_item(discord.ui.TextInput(label="How do the character and user interact?", placeholder="Are they helpful, annoyed, and will they have censorship?", default="CHARACTER gives responses that are ", required=False))
+        self.add_item(discord.ui.TextInput(label="Give some examples character responses.", placeholder="\"Tysm!! :) ^^\", \"Annoying, go away...\", etc", default="Some things CHARACTER might say include: ", required=False))
+        self.add_item(discord.ui.TextInput(label="Anything else?", required=False))
+
     async def on_submit(self, interaction : discord.Interaction):
-        newProfile = self.description.value + (" " if self.responsetype.value != "" else "") + self.responsetype.value + (" " if self.examples.value != "" else "") + self.examples.value + (" " if self.misc.value != "" else "") + self.misc.value
+        newProfile = self.children[0].value + (" " if self.children[1].value != "" else "") + self.children[1].value + (" " if self.children[2].value != "" else "") + self.children[2].value + (" " if self.children[3].value != "" else "") + self.children[3].value
         self.targetChar.profile = newProfile
         await interaction.response.send_message("Changed character profile to ```" + newProfile + "```")
 
