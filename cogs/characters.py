@@ -64,7 +64,7 @@ class Characters(commands.Cog):
             user = data.get_user(interaction.user.id)
 
             user.modelUniqueID += 1
-            newCharacter = model.Character(user.modelUniqueID, "conversation", self.name.value, self.icon.value, 0, 1.7, 0.95, 50, 1.2, 1500)
+            newCharacter = model.Character(user.modelUniqueID, "conversation", self.name.value, self.icon.value, model.Airoboros65b, 0, 1.7, 0.95, 50, 1.2, 1500)
             newCharacter.setProfile(self.profile.value)
             user.currentCharacter = newCharacter
             user.characters.append(newCharacter)
@@ -235,6 +235,54 @@ class Characters(commands.Cog):
 
             await interaction.response.send_message(embed=embed)
             self.disabled = True
+
+    # A select menu is basically a dropdown where the user has to pick one of the options
+    # A select menu that lets the user choose one of their characters to delete 
+    class ChangeModelSelectMenu(discord.ui.Select):
+        targetChar : model.Character
+
+        def __init__(self, targetChar : model.Character):
+            self.targetChar = targetChar
+            options = []
+            for m in model.LLMModels:
+                options.append(discord.SelectOption(label=m.displayName, description=m.displayDescription))
+            super().__init__(placeholder='Change mode', min_values=1, max_values=1, options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.message.edit(view = None)
+
+            for m in model.LLMModels:
+                if m.displayName == self.values[0]:
+                    self.targetChar.model = m
+                    embed = discord.Embed(description=f"Now using {self.values[0]}", color=discord.Color.blue())
+                    await interaction.response.send_message(embed=embed)
+                    self.disabled = True
+                    return
+            embed = discord.Embed(description=f"Model {self.values[0]} not found?", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed)
+            print(f"<ERROR> Model {self.values[0]} not found")
+
+    # Attaches the above select menu to a view
+    class ChangeModelView(discord.ui.View):
+        def __init__(self, parent, targetChar : model.Character):
+            super().__init__()
+
+            # Adds the dropdown to our view object.
+            self.add_item(parent.ChangeModelSelectMenu(targetChar))
+
+    # Links the above view to a slash command
+    @app_commands.guilds(data.GUILD)
+    @app_commands.command(name = "change_model", description = "Change the model used to generate character outputs")
+    async def change_model(self, interaction : discord.Interaction):
+        user = data.get_user(interaction.user.id)
+
+        if user.characters.index(user.currentCharacter) <= 2:
+            embed = discord.Embed(description="You can't change the model of default characters!", color=discord.Color.yellow())
+            await interaction.response.send_message(embed=embed)
+            return
+        view = self.ChangeModelView(self, user.currentCharacter)
+        embed = discord.Embed(description="Select a model to use on this character:", color=discord.Color.blue())
+        await interaction.response.send_message(embed=embed, view=view)
 
     # Attaches the above select menu to a view
     class DeleteCharacterView(discord.ui.View):

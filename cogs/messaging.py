@@ -34,6 +34,10 @@ class Messaging(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
+    async def on_disconnect(self):
+        data.save_users()
+
+    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         ignored = (commands.CommandNotFound, )
         error = getattr(error, 'original', error)
@@ -52,11 +56,19 @@ class Messaging(commands.Cog):
         
         user = data.get_user(message.author.id)
 
-        if self.bot.user.mention in message.content.split():
+        text = message.content.split()
+        if self.bot.user.mention == text[0]:
             async with message.channel.typing():
                 # Respond to the user message
-                user.currentCharacter.lastQuestion = " ".join(message.content.split()[1:])
-                response = await user.currentCharacter.request(" ".join(message.content.split()[1:]))
+                user.currentCharacter.lastQuestion = " ".join(text[1:])
+                response = await user.currentCharacter.request(" ".join(text[1:]))
+                await send_message_as_character(message.author.id, message.channel, response, user.currentCharacter)
+        elif message.content.startswith("?"):
+            async with message.channel.typing():
+                # Respond to the user message
+                text = message.content[1:].strip()
+                user.currentCharacter.lastQuestion = text
+                response = await user.currentCharacter.request(text)
                 await send_message_as_character(message.author.id, message.channel, response, user.currentCharacter)
 
     # Retries last interaction
@@ -82,7 +94,7 @@ class Messaging(commands.Cog):
             await interaction.response.send_message(embed=embed)
 
     # Suggestion model character used to generate suggestions
-    SuggestionModel = model.Character(-1, "no memory", "Airoboros", "https://cdn.discordapp.com/embed/avatars/0.png", 0, 1.7, 0.95, 50, 1.2, 4000)
+    SuggestionModel = model.Character(-1, "no memory", "Airoboros", "https://cdn.discordapp.com/embed/avatars/0.png", model.Airoboros65b, 0, 1.7, 0.95, 50, 1.2, 4000)
     # Get character profile suggestions using AI
     @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "get_character_suggestions", description = "Get suggestions for your character's profile!")

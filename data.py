@@ -1,6 +1,7 @@
 import discord
 import requests
 import model
+import pickle 
 
 # Should only be called once
 def init():  
@@ -20,9 +21,6 @@ def init():
     # Store user data (characters, conversations, and some metadata)
     global users
     users = {}
-
-    # Load users from a text file called "users"
-    #TODO : Complete this method 
 
 # Gets a user by their id. If the userid isn't associated with any user, a new user is created.
 def get_user(userid : int) -> model.User:
@@ -53,10 +51,4 @@ async def get_webhook(userid : int, textChannel : discord.TextChannel, character
         
         webhooks[key] = webhook 
         return webhook
-
-# Save users to a text file called "users"
-def save_users():
-    global users
-
-    #TODO : Complete this method 
 

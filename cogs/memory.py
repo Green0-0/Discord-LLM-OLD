@@ -18,7 +18,7 @@ class Memory(commands.Cog):
     @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "clear_memory", description = "Clear character memory")
     async def clear_memory(self, interaction : discord.Interaction):
-        user = data.get_user(interaction.user)
+        user = data.get_user(interaction.user.id)
         user.currentCharacter.lastQuestion = ""
         user.currentCharacter.conversation = []
         user.currentCharacter.currentConversationCharacters = 0
@@ -56,18 +56,10 @@ class Memory(commands.Cog):
 
         async def callback(self, interaction: discord.Interaction):
             await interaction.message.edit(view = None)
-            if self.values[0] == "No memory":
-                self.targetChar.mode = "no memory"
-                embed = discord.Embed(description="Mode set to no memory", color=discord.Color.blue())
-                await interaction.response.send_message(embed=embed)
-            elif self.values[0] == "Frozen":
-                self.targetChar.mode = "frozen"
-                embed = discord.Embed(description="Mode set to frozen", color=discord.Color.blue())
-                await interaction.response.send_message(embed=embed)
-            elif self.values[0] == "Conversation":
-                self.targetChar.mode = "conversation"
-                embed = discord.Embed(description="Mode set to conversation", color=discord.Color.blue())
-                await interaction.response.send_message(embed=embed)
+
+            self.targetChar.mode = self.values[0].lower()
+            embed = discord.Embed(description=f"Mode set to {self.values[0].lower()}", color=discord.Color.blue())
+            await interaction.response.send_message(embed=embed)
             self.disabled = True
 
     # Attaches the above select menu to a view
