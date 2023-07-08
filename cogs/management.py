@@ -107,6 +107,7 @@ class Management(commands.Cog):
     /delete_character - delete a character
 
     /change_mode - change interaction mode
+    /change_model - change AI model used for outputs
     /delete_last_interaction - delete the last interaction
     /retry_last_interaction - retry the last interaction
     /clear_memory - clear character memory
