@@ -114,7 +114,7 @@ class Management(commands.Cog):
     /get_character_suggestions - get suggestions for how to improve your character profile!
 
     Be warned that if the bot is turned off for some reason all your character data will disappear, if you write any dedicated characters make sure to save them in a text file somewhere.
-    If the bot doesn't respond to a command or fails an interaction or doesn't update your character info, report it as a bug, if the bot simply takes a long time to reply to you or doesn't reply at all it probably isn't an issue related to the bot.
+    If the bot doesn't respond to a command or fails an interaction or doesn't update your character info, report it as a bug, if the bot simply takes a long time to reply to you it probably isn't an issue related to the bot.
     If a character is acting weird try fiddling with the temperature, a range of 0.8-1.8 is recommended but varies per model.
     """, color=discord.Color.blue())
         await interaction.response.send_message(embed=embed)
