@@ -64,7 +64,7 @@ class Characters(commands.Cog):
             user = data.get_user(interaction.user.id)
 
             user.modelUniqueID += 1
-            newCharacter = model.Character(user.modelUniqueID, "conversation", self.name.value, self.icon.value, model.Airoboros65b, 0, 1.5, 0.95, 50, 1.2, 1500)
+            newCharacter = model.Character(user.modelUniqueID, "conversation", self.name.value, self.icon.value, model.Airoboros65b, 0, 1.4, 0.95, 50, 1.2, 1500)
             newCharacter.setProfile(self.profile.value)
             user.currentCharacter = newCharacter
             user.characters.append(newCharacter)
@@ -79,7 +79,6 @@ class Characters(commands.Cog):
             await interaction.response.send_message(embed=embed)
 
     # Links the modal above to a slash command
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "create_character", description = "Create a new character")
     async def create_character_command(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -143,7 +142,6 @@ class Characters(commands.Cog):
                 return
     
     # Links the above modal to a slash command
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "edit_properties", description = "Edit temperature, maxlen, etc")
     async def edit_properties_command(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -176,13 +174,12 @@ class Characters(commands.Cog):
 
         async def on_submit(self, interaction : discord.Interaction):
             newProfile = self.children[0].value + (" " if self.children[1].value != "" else "") + self.children[1].value + (" " if self.children[2].value != "" else "") + self.children[2].value + (" " if self.children[3].value != "" else "") + self.children[3].value
-            self.targetChar.profile = newProfile
+            self.targetChar.setProfile(newProfile)
             embed = discord.Embed(title=f"Changed {self.targetChar.name}'s Profile to:", description=newProfile, color=discord.Color.blue())
             embed.set_thumbnail(url=self.targetChar.icon)
             await interaction.response.send_message(embed=embed)
 
     # Links the above modal to a slash command
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "edit_profile", description = "Edit your current character's profile. This gives it its personality.")
     async def edit_profile(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -191,7 +188,6 @@ class Characters(commands.Cog):
             embed = discord.Embed(description="You can't change the profile of the default characters!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
             return
-        user = data.get_user(interaction.user)
         await interaction.response.send_modal(self.EditProfileModal(user.currentCharacter))
 
     # A select menu is basically a dropdown where the user has to pick one of the options
@@ -271,7 +267,6 @@ class Characters(commands.Cog):
             self.add_item(parent.ChangeModelSelectMenu(targetChar))
 
     # Links the above view to a slash command
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "change_model", description = "Change the model used to generate character outputs")
     async def change_model(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -293,7 +288,6 @@ class Characters(commands.Cog):
             self.add_item(parent.DeleteCharacterSelectMenu(characters))
 
     # Links the above view to a slash command
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "delete_character", description = "Delete a character")
     async def delete_character(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)

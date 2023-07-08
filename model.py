@@ -85,7 +85,7 @@ class Character:
 
         self.conversation = []
 
-    def setProfile(self,profile):
+    def setProfile(self, profile):
         self.profile = profile.replace("\n", " ")
 
     # Gets the model response
@@ -93,6 +93,9 @@ class Character:
     def request(self, prompt, raw=True,tries=5):
         if (prompt is None):
             return("")
+        # culls older convo if the user switched to a bot with lower context length
+        while self.currentConversationCharacters > self.model.contextLength:
+            self.currentConversationCharacters -= len(self.conversation.pop(0)) + len(self.conversation.pop(0))
         # Parses the prompt
         if (self.mode == "text completion"):
             finalPrompt = prompt
@@ -136,7 +139,8 @@ class Character:
                 self.conversation.append(userStr)
                 self.conversation.append(responseStr)
                 self.currentConversationCharacters += len(userStr) + len(responseStr)
-                if (self.currentConversationCharacters > self.model.contextLength):
+                # culls old convo to fit in new convo
+                while self.currentConversationCharacters > self.model.contextLength:
                     self.currentConversationCharacters -= len(self.conversation.pop(0)) + len(self.conversation.pop(0))
         return response["reply"]
 

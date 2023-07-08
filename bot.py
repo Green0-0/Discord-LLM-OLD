@@ -26,7 +26,7 @@ data.init()
 @bot.event
 async def on_ready():
     guild = await bot.fetch_guild(data.GUILD)
-    await bot.tree.sync(guild=discord.Object(data.GUILD))
+    await bot.tree.sync()
     for w in await guild.webhooks():
         await w.delete()
     print(f'Logged in as {bot.user}, begin using the bot!')

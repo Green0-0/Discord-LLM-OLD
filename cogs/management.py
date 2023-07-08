@@ -58,7 +58,6 @@ class Management(commands.Cog):
             self.add_item(parent.SelectCharacter_selectmenu(characters))
 
     # Links the above view to a slash command
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "change_character", description = "Change character")
     async def change_character(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -66,7 +65,6 @@ class Management(commands.Cog):
         embed = discord.Embed(description="Select a character:", color=discord.Color.blue())
         await interaction.response.send_message(embed=embed, view=view)
 
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "list_characters", description = "List characters")
     async def list_characters(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -74,7 +72,6 @@ class Management(commands.Cog):
         embed = discord.Embed(title="Characters", description=charList, color=discord.Color.blue())
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "view_current_character", description = "View your currently selected character")
     async def view_current_character(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -84,15 +81,21 @@ class Management(commands.Cog):
         embed = discord.Embed(title="Properties", description="Temperature: " + str(user.currentCharacter.temperature) + "\n" + "Top_p: " + str(user.currentCharacter.top_p) + "\n" + "Top_k: " + str(user.currentCharacter.top_k) + "\n" + "Repetition Penalty: " + str(user.currentCharacter.repetition_penalty) + "\n" + "Max Length: " + str(user.currentCharacter.max_new_len), color=discord.Color.blue())
         await interaction.channel.send(embed=embed)
         convo = "\n".join(user.currentCharacter.conversation)
-        embed = discord.Embed(title="Conversation History", description=convo, color=discord.Color.blue())
-        await interaction.channel.send(embed=embed)
+        if (len(convo) > 4000):
+            embed = discord.Embed(title="Conversation History I", description=convo[0:4000], color=discord.Color.blue())
+            await interaction.channel.send(embed=embed)
+            embed = discord.Embed(title="Conversation History II", description=convo[4000:], color=discord.Color.blue())
+            await interaction.channel.send(embed=embed)
+        else:
+            embed = discord.Embed(title="Conversation History", description=convo, color=discord.Color.blue())
+            await interaction.channel.send(embed=embed)
+        
 
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "help", description = "Help")
     async def help(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         embed = discord.Embed(title="List of Commands (Commands are self explanatory)", description=
-    """Mention the bot to get a response
+    """Mention the bot or begin a prompt with \'.\' to get a response
 
     /create_character - create a character
     /edit_properties - edit character properties

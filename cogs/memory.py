@@ -15,7 +15,6 @@ class Memory(commands.Cog):
     def __init__(self, bot : commands.Bot):
         self.bot = bot
     
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "clear_memory", description = "Clear character memory")
     async def clear_memory(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -25,7 +24,6 @@ class Memory(commands.Cog):
         embed = discord.Embed(description=f"Cleared {user.currentCharacter.name}'s memory!", color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "delete_last_interaction", description = "Delete the last pair of messages")
     async def delete_last_interaction(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
@@ -71,7 +69,6 @@ class Memory(commands.Cog):
             self.add_item(parent.ChangeModeSelectMenu(targetChar))
 
     # Links the above view to a slash command
-    @app_commands.guilds(data.GUILD)
     @app_commands.command(name = "change_mode", description = "Change character mode")
     async def change_mode(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
