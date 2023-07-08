@@ -94,15 +94,12 @@ class Character:
         if (prompt is None):
             return("")
         # Parses the prompt
-        print("----------\nSending the following message to AI...:\n#########")
         if (self.mode == "text completion"):
             finalPrompt = prompt
         if (self.mode == "no memory"):
             finalPrompt = (self.systemPrompt + " " + self.profile).replace("CHARACTER", self.name) + " " + f"USER: {prompt} {self.name}:"
         if (self.mode == "conversation" or self.mode == "frozen"):
             finalPrompt = (self.systemPrompt + " " + self.profile).replace("CHARACTER", self.name) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"USER: {prompt} {self.name}:"
-
-        print(finalPrompt + "\n#########")
         # Create a JSON message with the parameters
         command = {
             'message': finalPrompt,

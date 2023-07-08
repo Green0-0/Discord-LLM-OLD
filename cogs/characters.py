@@ -122,7 +122,7 @@ class Characters(commands.Cog):
         async def on_submit(self, interaction : discord.Interaction):
             # Checks if the input is valid floats or ints
             if isFloat(self.children[0].value) and isFloat(self.children[1].value) and self.children[2].value.isdigit() and isFloat(self.children[3].value) and self.children[4].value.isdigit():                
-                embed = discord.Embed(title="Modified {self.targetChar.name}'s Properties", 
+                embed = discord.Embed(title=f"Modified {self.targetChar.name}'s Properties", 
                                       description=f""" temperature: {self.targetChar.temperature} -> {self.children[0].value}
                                            top_p: {self.targetChar.top_p} -> {self.children[1].value}
                                            top_k: {self.targetChar.top_k} -> {self.children[2].value}
@@ -188,7 +188,7 @@ class Characters(commands.Cog):
         user = data.get_user(interaction.user.id)
 
         if user.characters.index(user.currentCharacter) <= 2:
-            embed = discord.embed(description="You can't change the profile of the default characters!", color=discord.Color.yellow())
+            embed = discord.Embed(description="You can't change the profile of the default characters!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
             return
         user = data.get_user(interaction.user)
@@ -276,7 +276,7 @@ class Characters(commands.Cog):
     async def change_model(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
-        if user.characters.index(user.currentCharacter) <= 2:
+        if user.characters.index(user.currentCharacter) <= 1:
             embed = discord.Embed(description="You can't change the model of default characters!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
             return

@@ -14,15 +14,23 @@ async def setup(bot : commands.Bot):
 async def send_message_as_character(userid : int, channel, message : str, character : model.Character):
     # Webhooks do not work in dm, so roleplay is not possible. Simply sends the message.
     if isinstance(channel, discord.DMChannel):
-        await channel.send(character.name + ": " + message)
+        if (len(message) > 1900):
+            for i in range ((int(len(message)/1900)) + 1):
+                if (i == 0):
+                    await channel.send(character.name + ": " + message[i*1900:i*1900+1900])
+                else:
+                    await channel.send(message[i*1900:i*1900+1900])
+        else:
+            await channel.send(character.name + ": " + message)
+        
     else: 
         # Tries to find a webhook from the cache, if not found uses a new one.
         webhook = await data.get_webhook(userid, channel, character)
         
         # Split up response if it is longer than 2k chars, then sends the message using the webhook previously retrieved
-        if (len(message) > 2000):
-            for i in range ((int(len(message)/2000)) + 1):
-                await webhook.send(message[i*2000:i*2000+2000])
+        if (len(message) > 1900):
+            for i in range ((int(len(message)/1900)) + 1):
+                await webhook.send(message[i*1900:i*1900+1900])
         else:
             await webhook.send(message)
 
@@ -32,10 +40,6 @@ class Messaging(commands.Cog):
     
     def __init__(self, bot : commands.Bot):
         self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_disconnect(self):
-        data.save_users()
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -53,7 +57,7 @@ class Messaging(commands.Cog):
     async def on_message(self, message : discord.Message):
         if message.author == self.bot.user:
             return
-        
+
         user = data.get_user(message.author.id)
 
         text = message.content.split()
@@ -63,7 +67,7 @@ class Messaging(commands.Cog):
                 user.currentCharacter.lastQuestion = " ".join(text[1:])
                 response = await user.currentCharacter.request(" ".join(text[1:]))
                 await send_message_as_character(message.author.id, message.channel, response, user.currentCharacter)
-        elif message.content.startswith("?"):
+        elif message.content.startswith("."):
             async with message.channel.typing():
                 # Respond to the user message
                 text = message.content[1:].strip()
