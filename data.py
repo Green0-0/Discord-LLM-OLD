@@ -46,7 +46,7 @@ async def get_webhook(userid : int, textChannel : discord.TextChannel, character
         # If there isn't enough space for the new webhook (discord has a webhook limit), delete one from the cache
         if len(webhooks) > 9:
             print("<Log> Deleted webhook to make space for new one.")
-            await webhooks.pop(0).delete()
+            await webhooks.popitem()[1].delete()
         webhook = await textChannel.create_webhook(name=character.name, avatar=avatar)
         
         webhooks[key] = webhook 
