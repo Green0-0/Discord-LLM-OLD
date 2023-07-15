@@ -57,7 +57,8 @@ class Messaging(commands.Cog):
     async def on_message(self, message : discord.Message):
         if message.author == self.bot.user:
             return
-
+        if message.content == "":
+            return
         user = data.get_user(message.author.id)
 
         text = message.content.split()
