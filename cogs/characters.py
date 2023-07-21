@@ -46,18 +46,24 @@ class Characters(commands.Cog):
             if (len(user.characters) > 24):
                 embed = discord.Embed(description="You have reached the character limit! Please delete a character before creating a new one.", color=discord.Color.yellow())
                 await interaction.response.send_message(embed=embed)
+                embed = discord.Embed(title="Failed to create character " + self.name.value, description="Character description: " + self.profile.value, color=discord.Color.yellow())
+                await interaction.channel.send(embed=embed)
                 return
         
             # Checks if the icon URL is valid
             if not validators.url(self.icon.value):
                 embed = discord.Embed(description="Invalid icon URL", color=discord.Color.yellow())
                 await interaction.response.send_message(embed=embed)
+                embed = discord.Embed(title="Failed to create character " + self.name.value, description="Character description: " + self.profile.value, color=discord.Color.yellow())
+                await interaction.channel.send(embed=embed)
                 return
             image_formats = ("image/png", "image/jpeg", "image/jpg")
             r = requests.head(self.icon)
             if r.headers["content-type"] not in image_formats:
                 embed = discord.Embed(description="Invalid icon URL", color=discord.Color.yellow())
                 await interaction.response.send_message(embed=embed)
+                embed = discord.Embed(title="Failed to create character " + self.name.value, description="Character description: " + self.profile.value, color=discord.Color.yellow())
+                await interaction.channel.send(embed=embed)
                 return
             
             # Adds character to user character list and sets it to the current character, also attaches some default values to model parameters
@@ -184,53 +190,11 @@ class Characters(commands.Cog):
     async def edit_profile(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
-        if user.characters.index(user.currentCharacter) <= 2:
+        if user.currentCharacter.modifiable == False or user.currentCharacter.mode == "text completion":
             embed = discord.Embed(description="You can't change the profile of the default characters!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
             return
         await interaction.response.send_modal(self.EditProfileModal(user.currentCharacter))
-
-    # A select menu is basically a dropdown where the user has to pick one of the options
-    # A select menu that lets the user choose one of their characters to delete 
-    class DeleteCharacterSelectMenu(discord.ui.Select):
-        originalLen : int
-
-        def __init__(self, characters : list):
-            self.originalLen = len(characters)
-            options = []
-            for i in range (len(characters)):
-                options.append(discord.SelectOption(label=i, description=characters[i].name))
-
-            super().__init__(placeholder='Select a character to delete', min_values=1, max_values=1, options=options)
-
-        async def callback(self, interaction: discord.Interaction):
-            await interaction.message.edit(view = None)
-
-            user = data.get_user(interaction.user.id)
-
-            if (self.originalLen != len(user.characters)):
-                embed = discord.Embed(description="Character list was changed, aborting deletion...", color=discord.Color.red())
-                await interaction.response.send_message(embed=embed)
-                return
-            c = user.characters[int(self.values[0])]
-            if c == user.currentCharacter:
-                embed = discord.Embed(description="You can't delete the current character!", color=discord.Color.yellow())
-                await interaction.response.send_message(embed=embed)
-                return
-            if int(self.values[0]) < 3:
-                embed = discord.Embed(description="Please don't delete the default characters!", color=discord.Color.yellow())
-                await interaction.response.send_message(embed=embed)
-                return
-            user.characters.remove(c)
-            
-            embed = discord.Embed(title=c.name, 
-                                      description=c.profile,
-                                      color=discord.Color.red())
-            embed.set_author(name="Deleted")
-            embed.set_thumbnail(url=c.icon)
-
-            await interaction.response.send_message(embed=embed)
-            self.disabled = True
 
     # A select menu is basically a dropdown where the user has to pick one of the options
     # A select menu that lets the user choose one of their characters to delete 
@@ -271,13 +235,55 @@ class Characters(commands.Cog):
     async def change_model(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
-        if user.characters.index(user.currentCharacter) <= 1:
+        if user.currentCharacter.modifiable == False:
             embed = discord.Embed(description="You can't change the model of default characters!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
             return
         view = self.ChangeModelView(self, user.currentCharacter)
         embed = discord.Embed(description="Select a model to use on this character:", color=discord.Color.blue())
         await interaction.response.send_message(embed=embed, view=view)
+
+    # A select menu is basically a dropdown where the user has to pick one of the options
+    # A select menu that lets the user choose one of their characters to delete 
+    class DeleteCharacterSelectMenu(discord.ui.Select):
+        originalLen : int
+
+        def __init__(self, characters : list):
+            self.originalLen = len(characters)
+            options = []
+            for i in range (len(characters)):
+                options.append(discord.SelectOption(label=i, description=characters[i].name))
+
+            super().__init__(placeholder='Select a character to delete', min_values=1, max_values=1, options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.message.edit(view = None)
+
+            user = data.get_user(interaction.user.id)
+
+            if (self.originalLen != len(user.characters)):
+                embed = discord.Embed(description="Character list was changed, aborting deletion...", color=discord.Color.red())
+                await interaction.response.send_message(embed=embed)
+                return
+            c = user.characters[int(self.values[0])]
+            if c == user.currentCharacter:
+                embed = discord.Embed(description="You can't delete the current character!", color=discord.Color.yellow())
+                await interaction.response.send_message(embed=embed)
+                return
+            if c.modifiable == False or c.mode == "text completion": 
+                embed = discord.Embed(description="Please don't delete the default characters!", color=discord.Color.yellow())
+                await interaction.response.send_message(embed=embed)
+                return
+            user.characters.remove(c)
+            
+            embed = discord.Embed(title=c.name, 
+                                      description=c.profile,
+                                      color=discord.Color.red())
+            embed.set_author(name="Deleted")
+            embed.set_thumbnail(url=c.icon)
+
+            await interaction.response.send_message(embed=embed)
+            self.disabled = True
 
     # Attaches the above select menu to a view
     class DeleteCharacterView(discord.ui.View):

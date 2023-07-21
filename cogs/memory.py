@@ -73,7 +73,7 @@ class Memory(commands.Cog):
     async def change_mode(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
-        if user.characters.index(user.currentCharacter) == 2:
+        if user.currentCharacter.mode == "text completion":
             embed = discord.Embed(description="You can't change the mode of this character!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
             return
