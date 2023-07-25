@@ -11,17 +11,26 @@ async def setup(bot : commands.Bot):
     await bot.add_cog(Messaging(bot))
 
 # Sends a message using webhooks (if possible) to roleplay as a defined character with custom avatar and name
-async def send_message_as_character(userid : int, channel, message : str, character : model.Character):
+async def send_message_as_character(userid : int, channel, message : str, character : model.Character, wrapped : bool = False):
     # Webhooks do not work in dm, so roleplay is not possible. Simply sends the message.
     if isinstance(channel, discord.DMChannel):
         if (len(message) > 1900):
             for i in range ((int(len(message)/1900)) + 1):
                 if (i == 0):
-                    await channel.send(character.name + ": " + message[i*1900:i*1900+1900])
+                    if wrapped: 
+                        await channel.send("```" + character.name + ": " + message[i*1900:i*1900+1900] + "```")
+                    else: 
+                        await channel.send(character.name + ": " + message[i*1900:i*1900+1900])
                 else:
-                    await channel.send(message[i*1900:i*1900+1900])
+                    if wrapped:
+                        await channel.send("```" + message[i*1900:i*1900+1900] + "```")
+                    else:
+                        await channel.send(message[i*1900:i*1900+1900])
         else:
-            await channel.send(character.name + ": " + message)
+            if wrapped:
+                await channel.send("```" + character.name + ": " + message + "```")
+            else:
+                await channel.send(character.name + ": " + message)
         
     else: 
         # Tries to find a webhook from the cache, if not found uses a new one.
@@ -30,9 +39,15 @@ async def send_message_as_character(userid : int, channel, message : str, charac
         # Split up response if it is longer than 2k chars, then sends the message using the webhook previously retrieved
         if (len(message) > 1900):
             for i in range ((int(len(message)/1900)) + 1):
-                await webhook.send(message[i*1900:i*1900+1900])
+                if wrapped:
+                    await webhook.send("```" + message[i*1900:i*1900+1900] + "```")
+                else:
+                    await webhook.send(message[i*1900:i*1900+1900])
         else:
-            await webhook.send(message)
+            if wrapped:
+                await webhook.send("```" + message + "```")
+            else:
+                await webhook.send(message)
 
 # Cog that manages all events which require an LLM response
 class Messaging(commands.Cog):
@@ -68,6 +83,10 @@ class Messaging(commands.Cog):
                 user.currentCharacter.lastQuestion = " ".join(text[1:])
                 response = await user.currentCharacter.request(" ".join(text[1:]))
                 await send_message_as_character(message.author.id, message.channel, response, user.currentCharacter)
+                if user.sentWelcomer == False:
+                    user.sentWelcomer = True
+                    embed = discord.Embed(description="Hello, this appears to be your first time using the bot! If you want to learn the commands, use /help! There are two sample characters, Trump and Biden, and you can test out either of them with /change_character.", color=discord.Color.blue())
+                    await message.channel.send(embed=embed)
         elif message.content.startswith("."):
             async with message.channel.typing():
                 # Respond to the user message
@@ -75,6 +94,10 @@ class Messaging(commands.Cog):
                 user.currentCharacter.lastQuestion = text
                 response = await user.currentCharacter.request(text)
                 await send_message_as_character(message.author.id, message.channel, response, user.currentCharacter)
+                if user.sentWelcomer == False:
+                    user.sentWelcomer = True
+                    embed = discord.Embed(description="Hello, this appears to be your first time using the bot! If you want to learn the commands, use /help! There are two sample characters, Trump and Biden, and you can test out either of them with /change_character.", color=discord.Color.blue())
+                    await message.channel.send(embed=embed)
 
     # Retries last interaction
     @app_commands.command(name = "retry_last_interaction", description = "Retry the last interaction")
@@ -109,4 +132,15 @@ class Messaging(commands.Cog):
         async with interaction.channel.typing():
             # Respond to the user message
             response = await self.SuggestionModel.request(f"I am trying to write a character named \"{user.currentCharacter.name}\" for roleplaying. Currently, I have their profile described as such: \"{user.currentCharacter.profile.replace('CHARACTER', user.currentCharacter.name)}\". How can I improve upon this profile? How can I make it more interesting, unique, and complete in terms of personality? How can I improve the range and quality of interactions this character might have with someone else? Please also provide some examples of things this character might text to someone online. When giving examples for things the characters might text, also include emojis and other digital texting quirks, like >:(, ^-^, ^^, ..., etc, but only if it fits in their personality. Additionally, include any physical gestures they might make inside the conversation, like *thinking*, *laughs*, *surprised*, etc. Here's an example of this formatting for something a girl who is naive and kind would say: \"Hey...~ *pouts* That's so mean of you! >:(\" Alternatively, a supervillian might say this: \"*smiles* We'll be ready soon.\" Make sure to answer all the questions above with an in depth description/response.")
-            await send_message_as_character(interaction.user.id, interaction.channel, response, self.SuggestionModel)
+            await send_message_as_character(interaction.user.id, interaction.channel, response, self.SuggestionModel, wrapped=True)
+
+    # Shorten character profile using AI
+    @app_commands.command(name = "shorten_character_profile", description = "Get a shortened version of your character's profile- this might improve output quality.")
+    async def shorten_character_profile(self, interaction : discord.Interaction):
+        user = data.get_user(interaction.user.id)
+
+        await interaction.response.defer()
+        async with interaction.channel.typing():
+            # Respond to the user message
+            response = await self.SuggestionModel.request(f"I am trying to write a character named \"{user.currentCharacter.name}\" for roleplaying. Currently, I have their profile described as such: \"{user.currentCharacter.profile.replace('CHARACTER', user.currentCharacter.name)}\". However, this profile is far too long and verbose, and the AI that will roleplay as this character will not understand it. A character profile should be as compact and down to the point as possible. For example, you would have something like \"[Character Name] likes [item1, item2, etc] and dislikes [item1, item2, etc]. Their family and friends include [character1 + relationship, character2 + relationship, etc] They are [trait1, trait2, trait3, etc]. When engaging with the user they will [response types]. Examples include: [examples of character responses]. etc (include more details if you consider them necessary)\" When copying the examples, please make sure all of them are copied over to the shortened profile, word for word, these are important! Please make something similar for my character.")
+            await send_message_as_character(interaction.user.id, interaction.channel, response, self.SuggestionModel, wrapped=True)

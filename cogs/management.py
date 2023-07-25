@@ -113,6 +113,7 @@ class Management(commands.Cog):
     /clear_memory - clear character memory
 
     /get_character_suggestions - get suggestions for how to improve your character profile!
+    /shorten_character_profile - shorten your character profile
 
     Be warned that if the bot is turned off for some reason all your character data will disappear, if you write any dedicated characters make sure to save them in a text file somewhere.
     If the bot doesn't respond to a command or fails an interaction or doesn't update your character info, report it as a bug, if the bot simply takes a long time to reply to you it probably isn't an issue related to the bot.
