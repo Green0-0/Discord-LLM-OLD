@@ -70,7 +70,7 @@ class Characters(commands.Cog):
             user = data.get_user(interaction.user.id)
 
             user.modelUniqueID += 1
-            newCharacter = model.Character(user.modelUniqueID, "conversation", self.name.value, self.icon.value, model.Airoboros65b, 0, 1.4, 0.95, 50, 1.2, 1500)
+            newCharacter = model.Character(user.modelUniqueID, "conversation", self.name.value, self.icon.value, model.Airoboros70b, 0, 1.4, 0.95, 50, 1.2, 1500)
             newCharacter.setProfile(self.profile.value)
             user.currentCharacter = newCharacter
             user.characters.append(newCharacter)
