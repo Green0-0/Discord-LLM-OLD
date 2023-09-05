@@ -1,7 +1,7 @@
 import data
 import model
-import validators
 import requests
+import logging
 
 import discord
 from discord.ext import commands
@@ -51,15 +51,16 @@ class Characters(commands.Cog):
                 return
         
             # Checks if the icon URL is valid
-            if not validators.url(self.icon.value):
-                embed = discord.Embed(description="Invalid icon URL", color=discord.Color.yellow())
-                await interaction.response.send_message(embed=embed)
-                embed = discord.Embed(title="Failed to create character " + self.name.value, description="Character description: " + self.profile.value, color=discord.Color.yellow())
-                await interaction.channel.send(embed=embed)
-                return
-            image_formats = ("image/png", "image/jpeg", "image/jpg")
-            r = requests.head(self.icon)
-            if r.headers["content-type"] not in image_formats:
+            try:
+                r = requests.head(self.icon.value)
+                image_formats = ("image/png", "image/jpeg", "image/jpg")
+                if r.headers["content-type"] not in image_formats:
+                    embed = discord.Embed(description="Invalid icon URL", color=discord.Color.yellow())
+                    await interaction.response.send_message(embed=embed)
+                    embed = discord.Embed(title="Failed to create character " + self.name.value, description="Character description: " + self.profile.value, color=discord.Color.yellow())
+                    await interaction.channel.send(embed=embed)
+                    return
+            except:
                 embed = discord.Embed(description="Invalid icon URL", color=discord.Color.yellow())
                 await interaction.response.send_message(embed=embed)
                 embed = discord.Embed(title="Failed to create character " + self.name.value, description="Character description: " + self.profile.value, color=discord.Color.yellow())
@@ -70,7 +71,7 @@ class Characters(commands.Cog):
             user = data.get_user(interaction.user.id)
 
             user.modelUniqueID += 1
-            newCharacter = model.Character(user.modelUniqueID, "conversation", self.name.value, self.icon.value, model.Airoboros70b, 0, 1.4, 0.95, 50, 1.2, 1500)
+            newCharacter = model.Character(user.modelUniqueID, self.name.value, self.icon.value, data.LLMModels[0], temperature=1.4)
             newCharacter.setProfile(self.profile.value)
             user.currentCharacter = newCharacter
             user.characters.append(newCharacter)
@@ -83,9 +84,9 @@ class Characters(commands.Cog):
             embed.set_thumbnail(url=newCharacter.icon)
 
             await interaction.response.send_message(embed=embed)
-
+            
     # Links the modal above to a slash command
-    @app_commands.command(name = "create_character", description = "Create a new character")
+    @app_commands.command(name = "create_character", description = "Create a new character. Simply give a name, icon, and description/profile.")
     async def create_character_command(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
@@ -96,27 +97,79 @@ class Characters(commands.Cog):
             return
         await interaction.response.send_modal(self.CreateCharacterModal())
 
+    @app_commands.command(name = "quick_create_character", description = "Create a new character without the popup menu.")
+    async def quick_create_character_command(self, interaction : discord.Interaction, name : str, icon : str = "https://cdn.discordapp.com/embed/avatars/0.png", profile : str = ""):
+        user = data.get_user(interaction.user.id)
+
+        # There is a limit to the size of dropdown menus which I use for switching characters
+        if (len(user.characters) > 24):
+            embed = discord.Embed(description="You have reached the character limit! Please delete a character before creating a new one.", color=discord.Color.yellow())
+            await interaction.response.send_message(embed=embed)
+            embed = discord.Embed(title="Failed to create character " + name, description="Character description: " + profile, color=discord.Color.yellow())
+            await interaction.channel.send(embed=embed)
+            return
+        
+        # Checks if the icon URL is valid
+        try:
+            r = requests.head(icon)
+            image_formats = ("image/png", "image/jpeg", "image/jpg")
+            if r.headers["content-type"] not in image_formats:
+                embed = discord.Embed(description="Invalid icon URL", color=discord.Color.yellow())
+                await interaction.response.send_message(embed=embed)
+                embed = discord.Embed(title="Failed to create character " + name, description="Character description: " + profile, color=discord.Color.yellow())
+                await interaction.channel.send(embed=embed)
+                return
+        except:
+            embed = discord.Embed(description="Invalid icon URL", color=discord.Color.yellow())
+            await interaction.response.send_message(embed=embed)
+            embed = discord.Embed(title="Failed to create character " + name, description="Character description: " + profile, color=discord.Color.yellow())
+            await interaction.channel.send(embed=embed)
+            return
+        
+        # Adds character to user character list and sets it to the current character, also attaches some default values to model parameters
+        user = data.get_user(interaction.user.id)
+
+        user.modelUniqueID += 1
+        newCharacter = model.Character(user.modelUniqueID, name, icon, data.LLMModels[0], temperature=1.4)
+        newCharacter.setProfile(profile)
+        user.currentCharacter = newCharacter
+        user.characters.append(newCharacter)
+
+        embed = discord.Embed(title=newCharacter.name, 
+                                    description=newCharacter.profile,
+                                    color=discord.Color.blue())
+        embed.set_author(name="Created")
+        embed.set_footer(text="Mention the bot with @LLM followed by a message to begin chatting with the character!")
+        embed.set_thumbnail(url=newCharacter.icon)
+
+        await interaction.response.send_message(embed=embed)
+
+
     # A modal that edits the properties (temp, top_p, len, etc) of a character
-    class EditPropertiesModal(ui.Modal, title = "Set Properties"):
+    class ConfigModal(ui.Modal, title = "Set Properties"):
         targetChar : model.Character
 
         def __init__(self, targetChar : model.Character):
             super().__init__()
             self.targetChar = targetChar
             self.add_item(discord.ui.TextInput(label="Temperature:", 
-                                               default=str(targetChar.temperature), placeholder="Lower value = more consistent, less randomness", 
+                                               default=str(targetChar.temperature), 
+                                               placeholder="Lower value = more consistent, less randomness", 
                                                required=True))
             
-            self.add_item(discord.ui.TextInput(label="Top_p:", default=str(targetChar.top_p), 
+            self.add_item(discord.ui.TextInput(label="Top_p:", 
+                                               default=str(targetChar.top_p), 
                                                placeholder="Higher value = larger range of possible random results", 
                                                required=True))
             
             self.add_item(discord.ui.TextInput(label="Top_k:", 
                                                default=str(targetChar.top_k), 
-                                               placeholder="Higher value = larger range of possible random results", required=True))
+                                               placeholder="Higher value = larger range of possible random results", 
+                                               required=True))
             
             self.add_item(discord.ui.TextInput(label="Repetition_penalty:", 
-                                               default=str(targetChar.repetition_penalty), placeholder="Higher value = less repetition", 
+                                               default=str(targetChar.repetition_penalty), 
+                                               placeholder="Higher value = less repetition", 
                                                required=True))
             
             self.add_item(discord.ui.TextInput(label="Max_length:", 
@@ -148,10 +201,10 @@ class Characters(commands.Cog):
                 return
     
     # Links the above modal to a slash command
-    @app_commands.command(name = "edit_properties", description = "Edit temperature, maxlen, etc")
-    async def edit_properties_command(self, interaction : discord.Interaction):
+    @app_commands.command(name = "config", description = "Configure your character's properties, like temperature, length, etc.")
+    async def config_command(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
-        await interaction.response.send_modal(self.EditPropertiesModal(user.currentCharacter))
+        await interaction.response.send_modal(self.ConfigModal(user.currentCharacter))
 
     # A modal that edits the profile (system prompt) of a character
     class EditProfileModal(ui.Modal, title = "Edit Profile"):
@@ -167,12 +220,10 @@ class Characters(commands.Cog):
             
             self.add_item(discord.ui.TextInput(label="How do the character and user interact?", 
                                                placeholder="Are they helpful, annoyed, and will they have censorship?", 
-                                               default="CHARACTER gives responses that are ", 
                                                required=False))
             
             self.add_item(discord.ui.TextInput(label="Give some examples character responses.", 
                                                placeholder="\"Tysm!! :) ^^\", \"Annoying, go away...\", etc", 
-                                               default="Some things CHARACTER might say include: ", 
                                                required=False))
             
             self.add_item(discord.ui.TextInput(label="Anything else?", 
@@ -190,8 +241,8 @@ class Characters(commands.Cog):
     async def edit_profile(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
-        if user.currentCharacter.modifiable == False or user.currentCharacter.mode == "text completion":
-            embed = discord.Embed(description="You can't change the profile of the default characters!", color=discord.Color.yellow())
+        if user.currentCharacter.name == "Text Completion":
+            embed = discord.Embed(description="You can't change the profile of this characters!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
             return
         await interaction.response.send_modal(self.EditProfileModal(user.currentCharacter))
@@ -204,14 +255,14 @@ class Characters(commands.Cog):
         def __init__(self, targetChar : model.Character):
             self.targetChar = targetChar
             options = []
-            for m in model.LLMModels:
+            for m in data.LLMModels:
                 options.append(discord.SelectOption(label=m.displayName, description=m.displayDescription))
-            super().__init__(placeholder='Change mode', min_values=1, max_values=1, options=options)
+            super().__init__(placeholder='Change model', min_values=1, max_values=1, options=options)
 
         async def callback(self, interaction: discord.Interaction):
             await interaction.message.edit(view = None)
 
-            for m in model.LLMModels:
+            for m in data.LLMModels:
                 if m.displayName == self.values[0]:
                     self.targetChar.model = m
                     embed = discord.Embed(description=f"Now using {self.values[0]}", color=discord.Color.blue())
@@ -220,7 +271,7 @@ class Characters(commands.Cog):
                     return
             embed = discord.Embed(description=f"Model {self.values[0]} not found?", color=discord.Color.red())
             await interaction.response.send_message(embed=embed)
-            print(f"<ERROR> Model {self.values[0]} not found")
+            logging.error(f"<ERROR> Model {self.values[0]} not found")
 
     # Attaches the above select menu to a view
     class ChangeModelView(discord.ui.View):
@@ -231,14 +282,9 @@ class Characters(commands.Cog):
             self.add_item(parent.ChangeModelSelectMenu(targetChar))
 
     # Links the above view to a slash command
-    @app_commands.command(name = "change_model", description = "Change the model used to generate character outputs")
+    @app_commands.command(name = "change_model", description = "Change the AI LLM model used to generate character outputs")
     async def change_model(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
-
-        if user.currentCharacter.modifiable == False:
-            embed = discord.Embed(description="You can't change the model of default characters!", color=discord.Color.yellow())
-            await interaction.response.send_message(embed=embed)
-            return
         view = self.ChangeModelView(self, user.currentCharacter)
         embed = discord.Embed(description="Select a model to use on this character:", color=discord.Color.blue())
         await interaction.response.send_message(embed=embed, view=view)
@@ -270,10 +316,6 @@ class Characters(commands.Cog):
                 embed = discord.Embed(description="You can't delete the current character!", color=discord.Color.yellow())
                 await interaction.response.send_message(embed=embed)
                 return
-            if c.modifiable == False or c.mode == "text completion": 
-                embed = discord.Embed(description="Please don't delete the default characters!", color=discord.Color.yellow())
-                await interaction.response.send_message(embed=embed)
-                return
             user.characters.remove(c)
             
             embed = discord.Embed(title=c.name, 
@@ -294,9 +336,13 @@ class Characters(commands.Cog):
             self.add_item(parent.DeleteCharacterSelectMenu(characters))
 
     # Links the above view to a slash command
-    @app_commands.command(name = "delete_character", description = "Delete a character")
+    @app_commands.command(name = "delete_character", description = "Delete a character. This cannot be undone! (Though you can just remake it.)")
     async def delete_character(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
+        if len(user.characters) < 2:
+            embed = discord.Embed(description="Please do not delete any more characters!", color=discord.Color.yellow())
+            await interaction.response.send_message(embed=embed)
+            return
         view = self.DeleteCharacterView(self, user.characters)
         embed = discord.Embed(description="Select a character to delete:", color=discord.Color.red())
         await interaction.response.send_message(embed=embed, view=view)

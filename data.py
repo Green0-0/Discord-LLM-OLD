@@ -1,26 +1,46 @@
 import discord
 import requests
 import model
-import pickle 
+from io import StringIO
+import logging
 
 # Should only be called once
-def init():  
+def init(Log_stream : StringIO):  
     # Get token and guild from file
     global TOKEN
-    global GUILD
 
     with open("token.txt", "r") as f:
         TOKEN = f.read()
-    with open("guild.txt", "r") as f:
-        GUILD = int(f.read())
 
-    # Store webhooks so that new ones don't have to be constantly generated
-    global webhooks
-    webhooks = {}
+    # Store which webhooks each character uses
+    global webhookChannels
+    webhookChannels = {}
     
     # Store user data (characters, conversations, and some metadata)
     global users
     users = {}
+
+    # Store extensions, that is command groups to be loaded into the bot
+    global extensions
+    extensions = ["cogs.management", "cogs.memory", "cogs.messaging", "cogs.characters", "cogs.generics", "cogs.channels"]
+    global skip
+    skip = []
+
+    # Stores a list of admins who have permission to manage the bot
+    global admins
+    admins = []
+    
+    global log_stream
+    log_stream = Log_stream
+
+    global guildCat
+    guildCat = {}
+
+    global channelChar
+    channelChar = {}
+
+    global LLMModels
+    LLMModels = []
 
 # Gets a user by their id. If the userid isn't associated with any user, a new user is created.
 def get_user(userid : int) -> model.User:
@@ -34,21 +54,20 @@ def get_user(userid : int) -> model.User:
 
 # Gets a webhook to send model messages through. If none is found, then create a new one
 # This should NOT be called in dms, it will break
-async def get_webhook(userid : int, textChannel : discord.TextChannel, character : model.Character) -> discord.Webhook:
-    global webhooks
-    key = f"{userid} {textChannel.id} {character.id}"
-    if key in webhooks:
-        print(f"<Log> Used cached webhook for character named {character.name} with id {character.id}")
-        return webhooks[key]
+async def get_webhook(channel : discord.TextChannel, character : model.Character) -> discord.Webhook:
+    global webhookChannels
+    if channel not in webhookChannels:
+        webhookChannels[channel] = {}
+    if character in webhookChannels[channel]:
+        return webhookChannels[channel][character]
     else:
-        print(f"<Log> Generated new webhook for character named {character.name} with id {character.id}")
+        logging.info(f"<Log> Generated new webhook for character \"{character.name}\" in channel \"{channel.name}\"")
         avatar = requests.get(character.icon).content
         # If there isn't enough space for the new webhook (discord has a webhook limit), delete one from the cache
-        if len(webhooks) > 9:
-            print("<Log> Deleted webhook to make space for new one.")
-            await webhooks.popitem()[1].delete()
-        webhook = await textChannel.create_webhook(name=character.name, avatar=avatar)
-        
-        webhooks[key] = webhook 
-        return webhook
-
+        if len(webhookChannels[channel]) > 9:
+            toDelete = webhookChannels[channel].popitem()
+            logging.info(f"<Log> Deleted webhook \"{toDelete[1].name}\" to make space for new one.")
+            await toDelete[1].delete()
+        w = await channel.create_webhook(name=character.name, avatar=avatar)
+        webhookChannels[channel][character] = w 
+        return w

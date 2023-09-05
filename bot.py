@@ -1,35 +1,30 @@
-import model as m
-
 import discord
-from discord import ui, app_commands
 from discord.ext import commands
 import data 
+import logging
+import logging
+from io import StringIO
+
+log_stream = StringIO()    
+logger = logging.basicConfig(stream=log_stream, level=logging.INFO)
+logging.getLogger().addHandler(logging.StreamHandler())
+data.init(log_stream)
 
 class LLM (commands.Bot):
     async def setup_hook(self):
-        print("Bot is starting")
-        await bot.load_extension("cogs.management")
-        await bot.load_extension("cogs.memory")
-        await bot.load_extension("cogs.messaging")
-        await bot.load_extension("cogs.characters")
-        print ("Bot is loaded")
+        logging.info("Bot is starting")
+        await bot.load_extension("cogs.generics")
+        await self.tree.sync()
 
 # Sets up bot
-
 intents = discord.Intents.default()
 intents.message_content = True
-bot = LLM(command_prefix=".", intents=intents)
-
-data.init()
+bot = LLM(command_prefix="", intents=intents, help_command=None)
 
 # Finishes setting up the bot
 @bot.event
 async def on_ready():
-    guild = await bot.fetch_guild(data.GUILD)
-    await bot.tree.sync()
-    for w in await guild.webhooks():
-        await w.delete()
-    await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name="/help for my commands, and ping me to talk!"))
-    print(f'Logged in as {bot.user}, begin using the bot!')
-    
-bot.run(data.TOKEN)
+    await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Activity(type=discord.ActivityType.watching, name="/reload must be used by an admin before this bot does anything!"))
+    logging.info(f'Logged in as {bot.user}, begin using the bot!')
+
+bot.run(data.TOKEN, log_handler=logger)

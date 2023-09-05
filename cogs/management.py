@@ -1,5 +1,4 @@
 import data
-import model
 
 import discord
 from discord.ext import commands
@@ -58,24 +57,24 @@ class Management(commands.Cog):
             self.add_item(parent.SelectCharacter_selectmenu(characters))
 
     # Links the above view to a slash command
-    @app_commands.command(name = "change_character", description = "Change character")
+    @app_commands.command(name = "change_character", description = "Change to a different character profile.")
     async def change_character(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         view = self.SelectCharacterView(self, user.characters)
         embed = discord.Embed(description="Select a character:", color=discord.Color.blue())
         await interaction.response.send_message(embed=embed, view=view)
 
-    @app_commands.command(name = "list_characters", description = "List characters")
+    @app_commands.command(name = "list_characters", description = "List all the characters that you've created.")
     async def list_characters(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         charList = "\n".join([character.name for character in user.characters])
         embed = discord.Embed(title="Characters", description=charList, color=discord.Color.blue())
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name = "view_current_character", description = "View your currently selected character")
+    @app_commands.command(name = "view_current_character", description = "View your currently selected character, its properties, profile, and conversations.")
     async def view_current_character(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
-        embed = discord.Embed(title=user.currentCharacter.name, description="Mode: " + user.currentCharacter.mode.capitalize() + "\n" + user.currentCharacter.profile, color=discord.Color.blue())
+        embed = discord.Embed(title=user.currentCharacter.name, description="Remember new messages?: " + str(user.currentCharacter.memory) + "\n" + user.currentCharacter.profile, color=discord.Color.blue())
         embed.set_thumbnail(url=user.currentCharacter.icon)
         await interaction.response.send_message(embed=embed)
         embed = discord.Embed(title="Properties", description="Temperature: " + str(user.currentCharacter.temperature) + "\n" + "Top_p: " + str(user.currentCharacter.top_p) + "\n" + "Top_k: " + str(user.currentCharacter.top_k) + "\n" + "Repetition Penalty: " + str(user.currentCharacter.repetition_penalty) + "\n" + "Max Length: " + str(user.currentCharacter.max_new_len), color=discord.Color.blue())
@@ -89,34 +88,3 @@ class Management(commands.Cog):
         else:
             embed = discord.Embed(title="Conversation History", description=convo, color=discord.Color.blue())
             await interaction.channel.send(embed=embed)
-        
-
-    @app_commands.command(name = "help", description = "Help")
-    async def help(self, interaction : discord.Interaction):
-        user = data.get_user(interaction.user.id)
-        embed = discord.Embed(title="List of Commands (Commands are self explanatory)", description=
-    """Mention the bot or begin a prompt with \'.\' to get a response
-
-    /create_character - create a character
-    /edit_properties - edit character properties
-    /edit_profile - edit character profile
-
-    /change_character - change character
-    /list_characters - list all characters
-    /view_current_character - view current character
-    /delete_character - delete a character
-
-    /change_mode - change interaction mode
-    /change_model - change AI model used for outputs
-    /delete_last_interaction - delete the last interaction
-    /retry_last_interaction - retry the last interaction
-    /clear_memory - clear character memory
-
-    /get_character_suggestions - get suggestions for how to improve your character profile!
-    /shorten_character_profile - shorten your character profile
-
-    Be warned that if the bot is turned off for some reason all your character data will disappear, if you write any dedicated characters make sure to save them in a text file somewhere.
-    If the bot doesn't respond to a command or fails an interaction or doesn't update your character info, report it as a bug, if the bot simply takes a long time to reply to you it probably isn't an issue related to the bot.
-    If a character is acting weird try fiddling with the temperature, a range of 0.8-1.8 is recommended but varies per model.
-    """, color=discord.Color.blue())
-        await interaction.response.send_message(embed=embed)
