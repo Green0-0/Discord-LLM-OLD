@@ -79,7 +79,7 @@ class Messaging(commands.Cog):
         user = data.get_user(message.author.id)
 
         text = message.content.split()
-        textClean = message.content.split()
+        textClean = message.clean_content.split()
         if self.bot.user.mention == text[0]:
             async with message.channel.typing():
                 if message.channel in data.channelChar:
