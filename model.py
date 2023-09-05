@@ -57,8 +57,8 @@ class LLMModel:
 # Represents a character for a model, also includes the parameters
 class Character:
     # System prompts
-    singleUserPrompt = "A chat between a user named USER and CHARACTER."
-    multiUserPrompt = "A chat between multiple users and CHARACTER."
+    systemPrompt = "A chat between a user named USER and CHARACTER."
+    multiUserSystemPrompt = "A chat between multiple users and CHARACTER."
     
     # Name of the character
     name : str
@@ -116,7 +116,7 @@ class Character:
         if (self.name == "Text Completion"):
             finalPrompt = prompt
         else:
-            finalPrompt = (self.singleUserPrompt + " " + self.profile).replace("CHARACTER", self.name).replace("USER", username) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"User ({username}): {prompt} {self.name}:"
+            finalPrompt = (self.systemPrompt + " " + self.profile).replace("CHARACTER", self.name).replace("USER", username) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"User ({username}): {prompt} {self.name}:"
 
         # Create a JSON message with the parameters
         command = {
