@@ -25,6 +25,7 @@ class Channels(commands.Cog):
         c = model.Character(-1, user.currentCharacter.name, user.currentCharacter.icon, user.currentCharacter.model, memory=user.currentCharacter.memory,
                             temperature=user.currentCharacter.temperature, top_p = user.currentCharacter.top_p, top_k = user.currentCharacter.top_k, repetition_penalty = user.currentCharacter.repetition_penalty, max_new_len=user.currentCharacter.max_new_len)
         c.setProfile(user.currentCharacter.profile)
+        c.systemPrompt = c.multiUserSystemPrompt
 
         if not interaction.guild in data.guildCat or not data.guildCat[interaction.guild] in interaction.guild.categories:
             data.guildCat[interaction.guild] = await interaction.guild.create_category(name="Character Channels")

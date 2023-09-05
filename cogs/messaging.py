@@ -79,18 +79,19 @@ class Messaging(commands.Cog):
         user = data.get_user(message.author.id)
 
         text = message.content.split()
+        textClean = message.content.split()
         if self.bot.user.mention == text[0]:
             async with message.channel.typing():
                 if message.channel in data.channelChar:
                     character = data.channelChar[message.channel].character
-                    character.lastQuestion = " ".join(text[1:])
-                    response = await character.request(message.author.display_name, " ".join(text[1:]))
+                    character.lastQuestion = " ".join(textClean[1:])
+                    response = await character.request(message.author.display_name, " ".join(textClean[1:]))
                     await send_message_as_character(message.channel, response, character)
                     pass
                 else:
                     # Respond to the user message
-                    user.currentCharacter.lastQuestion = " ".join(text[1:])
-                    response = await user.currentCharacter.request(message.author.display_name, " ".join(text[1:]))
+                    user.currentCharacter.lastQuestion = " ".join(textClean[1:])
+                    response = await user.currentCharacter.request(message.author.display_name, " ".join(textClean[1:]))
                     await send_message_as_character(message.channel, response, user.currentCharacter)
                     if user.sentWelcomer == False:
                         user.sentWelcomer = True
