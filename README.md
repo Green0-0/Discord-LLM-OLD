@@ -16,3 +16,5 @@ Changes:
 - Debug/repair commands
 - Quick_create_character to make a character without modals
 - Changed edit_properties to config, may tabulate the modal in a future update to add more options
+- Removed the need for a guild text file, now the bot should theoretically work when added to multiple guilds
+- Auxilary improvements
