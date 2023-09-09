@@ -48,7 +48,7 @@ class Threads(commands.Cog):
             await interaction.response.send_message(embed=embed)
             return
         
-        await interaction.response.defer()
+        await interaction.response.send_message("Done!")
         t = data.threadChar.pop(interaction.channel).thread
         await t.edit(archived=True)
 

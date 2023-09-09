@@ -121,9 +121,9 @@ class Character:
             finalPrompt = prompt
         else:
             realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
-            realUserPrompt = realUserPrompt.replace("USER", username)
+            realUserPrompt = realUserPrompt.replace("USER", username) + " " + prompt
             realSystemPrompt = self.multiUserSystemPrompt if self.multiUser else self.systemPrompt
-            finalPrompt = (realSystemPrompt + " " + self.profile).replace("CHARACTER", self.name).replace("USER", username) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"{realUserPrompt} {prompt} {self.name}:"
+            finalPrompt = (realSystemPrompt + " " + self.profile).replace("CHARACTER", self.name).replace("USER", username) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"{realUserPrompt} {self.name}:"
 
         # Create a JSON message with the parameters
         command = {
@@ -146,9 +146,7 @@ class Character:
                 if int(response["errorcode"])==0:
                         break
         except:
-            response={}
-            responded = False
-            response["reply"]="Connection error. Try in a few seconds. (This message and the above question will not be saved in memory)"
+            return "Connection error. Try in a few seconds. (This message and the above question will not be saved in memory)"
         # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
         if (responded == True):
             if (self.name != "Text Completion"):
@@ -168,8 +166,8 @@ class Character:
                     response["reply"] = "(silence)"
             if (self.memory == True):
                 realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
-                realUserPrompt = realUserPrompt.replace("USER", username)
-                userStr = f"{realUserPrompt} {prompt}"
+                realUserPrompt = realUserPrompt.replace("USER", username) + " " + prompt
+                userStr = realUserPrompt
                 responseStr = f"{self.name}: {response['reply']}"
                 self.conversation.append(userStr)
                 self.conversation.append(responseStr)

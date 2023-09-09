@@ -51,7 +51,7 @@ def get_user(userid : int) -> model.User:
 
 # Gets a webhook to send model messages through. If none is found, then create a new one
 # This should NOT be called in dms, it will break
-async def get_webhook(channel : discord.TextChannel, character : model.Character) -> discord.Webhook:
+async def get_webhook(channel, character : model.Character) -> discord.Webhook:
     if isinstance(channel, discord.Thread):
         channel = channel.parent
     global webhookChannels

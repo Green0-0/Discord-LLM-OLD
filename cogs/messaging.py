@@ -169,7 +169,7 @@ class Messaging(commands.Cog):
 
     @app_commands.command(name = "reply_as_current", description = "Replies to a thread character using the current character.")
     @app_commands.checks.bot_has_permissions(manage_webhooks=True, embed_links=True)
-    async def reply_as_current(self, interaction : discord.Interaction):
+    async def reply_as_current(self, interaction : discord.Interaction, query : str=""):
         if interaction.channel in data.threadChar:
             user = data.get_user(interaction.user.id)
             userCharacter = user.currentCharacter
@@ -179,22 +179,22 @@ class Messaging(commands.Cog):
                 return
             threadCharacter : model.Character = data.threadChar[interaction.channel].character
             await interaction.response.defer()
-            response = await self.requestToBot(userCharacter, threadCharacter)
+            response = await self.requestToBot(userCharacter, threadCharacter, interaction.user.display_name, query)
             if response == None:
                 embed = discord.Embed(description="Connection error. Try in a few seconds. (This message and the above question will not be saved in memory).", color=discord.Color.yellow())
                 await interaction.channel.send(embed=embed)
                 return
             await send_message_as_character(interaction.channel, response, userCharacter)
-            threadCharacter.lastQuestion = response
-            response2 = await threadCharacter.request(userCharacter.name, response)
-            await send_message_as_character(interaction.channel, response2, threadCharacter)
         else:
             embed = discord.Embed(description="This can only be done in character threads!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
 
     @model.to_thread
-    def requestToBot(self, userCharacter : model.Character, threadCharacter : model.Character):
-        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + " " + userCharacter.profile).replace("CHARACTER", userCharacter.name) + " " + " ".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserSystemPrompt.replace("USER", threadCharacter.name)) + (" " if len(threadCharacter.conversation) > 0 else "") + f"{userCharacter.name}:"
+    def requestToBot(self, userCharacter : model.Character, threadCharacter : model.Character, username : str, query : str):
+        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + " " + userCharacter.profile).replace("CHARACTER", userCharacter.name) + " " + " ".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserUserPrompt.replace("USER", threadCharacter.name)) + (" " if len(threadCharacter.conversation) > 0 else "") 
+        if query != "":
+            userCharacterPrompt += userCharacter.multiUserUserPrompt.replace("USER", username) + " " + query
+        userCharacterPrompt += f" {userCharacter.name}:"
         # Create a JSON message with the parameters
         command = {
             'message': userCharacterPrompt,
@@ -218,6 +218,10 @@ class Messaging(commands.Cog):
                     break
         except:
             return None
+        logging.info("--PROMPT--")
+        logging.info(userCharacterPrompt)
+        logging.info("--RESPONSE--")
+        logging.info(response["reply"])
         # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
         response["reply"] = response["reply"][len(userCharacterPrompt) + 1:-1]
         found1 = re.search("user.{0,60}:", response["reply"].lower())
@@ -233,5 +237,18 @@ class Messaging(commands.Cog):
             response["reply"] = response["reply"][:realFound]
         if len(response["reply"]) == 0:
             response["reply"] = "(silence)"
+        logging.info("--RESPONSE FILTERED--")
+        logging.info(response["reply"])
+        if (threadCharacter.memory == True):
+            userStr = ""
+            if query != "":
+                userStr = threadCharacter.multiUserUserPrompt.replace("USER", username) + " " + query
+                threadCharacter.conversation.append(userStr)
+            responseStr = threadCharacter.multiUserUserPrompt.replace("USER", userCharacter.name) + " " + response['reply']
+            threadCharacter.conversation.append(responseStr)
+            threadCharacter.currentConversationCharacters += len(userStr) + len(responseStr)
+            # culls old convo to fit in new convo
+            while threadCharacter.currentConversationCharacters > threadCharacter.model.contextLength:
+                threadCharacter.currentConversationCharacters -= len(threadCharacter.conversation.pop(0)) + len(threadCharacter.conversation.pop(0))
         return response["reply"]
         
