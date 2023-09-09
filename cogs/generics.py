@@ -1,3 +1,4 @@
+import logging
 import discord
 import model
 from discord.ext import commands
@@ -115,7 +116,8 @@ class Generics(commands.Cog):
         await interaction.channel.send("Finished loading extensions")
         await interaction.channel.send("Syncing slash commands")
         try:
-            await self.bot.tree.sync()
+            #await self.bot.tree.sync()
+            pass
         except Exception as e:
             await interaction.channel.send("**Error syncing slash commands:** ```" + str(e) + "```")
         await interaction.channel.send("Finished syncing slash commands")
@@ -128,14 +130,25 @@ class Generics(commands.Cog):
             await interaction.response.send_message("You do not have permission to use this command.")
             return
         await interaction.response.send_message("Purging webhooks")
+        s = ""
         for guild in self.bot.guilds:
-            for webhook in await guild.webhooks():
-                if webhook.user == self.bot.user:
-                    await webhook.delete()
+            try:
+                w = await guild.webhooks()
+            except:
+                w = None
+                s += f"Could not delete webhooks in the guild \"{guild.name}\" due to a lack of permissions!\n"
+            if w is not None:
+                for webhook in w:
+                    if webhook.user == self.bot.user:
+                        await webhook.delete()
         data.webhookChannels = {}
+        if s != "":
+            await interaction.channel.send(s)
+        logging.info(s)
         await interaction.channel.send("Finished purging webhooks")
 
     @app_commands.command(name = "get_logs", description = "Gets the last 1000 characters from the console.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def get_logs(self, interaction : discord.Interaction):
        if not await self.is_admin(interaction):
             await interaction.response.send_message("You do not have permission to use this command.")

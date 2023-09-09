@@ -57,8 +57,11 @@ class LLMModel:
 # Represents a character for a model, also includes the parameters
 class Character:
     # System prompts
+    multiUser = False
     systemPrompt = "A chat between a user named USER and CHARACTER."
     multiUserSystemPrompt = "A chat between multiple users and CHARACTER."
+    userPrompt = "User:"
+    multiUserUserPrompt = "User (username=USER):"
     
     # Name of the character
     name : str
@@ -80,20 +83,21 @@ class Character:
     memory:bool= True
 
     def __init__(self, id,  name, icon, model,
-                 memory = True, seed = 0, temperature = 1.0, top_p = 0.95, top_k = 50, repetition_penalty = 1.2, max_new_len = 1500,
+                 memory = True, seed = 0, temperature = 1.0, top_p = 0.95, top_k = 50, repetition_penalty = 1.2, max_new_len = 1500, multiUser=False,
                  server_address="api.neuroengine.ai",server_port=443,key="",verify_ssl=True):
         self.id = id
-        self.memory = memory
         self.name = name
         self.icon = icon
+        self.model = model
+        self.memory = memory
         self.seed = seed
         self.temperature = temperature
         self.top_p = top_p
         self.top_k = top_k
         self.repetition_penalty = repetition_penalty
         self.max_new_len = max_new_len
-        self.model = model
-
+        self.multiUser = multiUser
+    
         self.server_address=server_address
         self.server_port=server_port
         self.key=key
@@ -116,7 +120,10 @@ class Character:
         if (self.name == "Text Completion"):
             finalPrompt = prompt
         else:
-            finalPrompt = (self.systemPrompt + " " + self.profile).replace("CHARACTER", self.name).replace("USER", username) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"User ({username}): {prompt} {self.name}:"
+            realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
+            realUserPrompt = realUserPrompt.replace("USER", username)
+            realSystemPrompt = self.multiUserSystemPrompt if self.multiUser else self.systemPrompt
+            finalPrompt = (realSystemPrompt + " " + self.profile).replace("CHARACTER", self.name).replace("USER", username) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"{realUserPrompt} {prompt} {self.name}:"
 
         # Create a JSON message with the parameters
         command = {
@@ -160,7 +167,9 @@ class Character:
                 if len(response["reply"]) == 0:
                     response["reply"] = "(silence)"
             if (self.memory == True):
-                userStr = f"User ({username}): {prompt}"
+                realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
+                realUserPrompt = realUserPrompt.replace("USER", username)
+                userStr = f"{realUserPrompt} {prompt}"
                 responseStr = f"{self.name}: {response['reply']}"
                 self.conversation.append(userStr)
                 self.conversation.append(responseStr)

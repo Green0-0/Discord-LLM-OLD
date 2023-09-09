@@ -58,6 +58,7 @@ class Management(commands.Cog):
 
     # Links the above view to a slash command
     @app_commands.command(name = "change_character", description = "Change to a different character profile.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def change_character(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         view = self.SelectCharacterView(self, user.characters)
@@ -65,6 +66,7 @@ class Management(commands.Cog):
         await interaction.response.send_message(embed=embed, view=view)
 
     @app_commands.command(name = "list_characters", description = "List all the characters that you've created.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def list_characters(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         charList = "\n".join([character.name for character in user.characters])
@@ -72,14 +74,19 @@ class Management(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name = "view_current_character", description = "View your currently selected character, its properties, profile, and conversations.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def view_current_character(self, interaction : discord.Interaction):
-        user = data.get_user(interaction.user.id)
-        embed = discord.Embed(title=user.currentCharacter.name, description="Remember new messages?: " + str(user.currentCharacter.memory) + "\n" + user.currentCharacter.profile, color=discord.Color.blue())
-        embed.set_thumbnail(url=user.currentCharacter.icon)
+        if interaction.channel in data.threadChar:
+            character = data.threadChar[interaction.channel].character
+        else:
+            user = data.get_user(interaction.user.id)
+            character = user.currentCharacter
+        embed = discord.Embed(title=character.name, description="Remember new messages?: " + str(character.memory) + "\n" + character.profile, color=discord.Color.blue())
+        embed.set_thumbnail(url=character.icon)
         await interaction.response.send_message(embed=embed)
-        embed = discord.Embed(title="Properties", description="Temperature: " + str(user.currentCharacter.temperature) + "\n" + "Top_p: " + str(user.currentCharacter.top_p) + "\n" + "Top_k: " + str(user.currentCharacter.top_k) + "\n" + "Repetition Penalty: " + str(user.currentCharacter.repetition_penalty) + "\n" + "Max Length: " + str(user.currentCharacter.max_new_len), color=discord.Color.blue())
+        embed = discord.Embed(title="Properties", description="Temperature: " + str(character.temperature) + "\n" + "Top_p: " + str(character.top_p) + "\n" + "Top_k: " + str(character.top_k) + "\n" + "Repetition Penalty: " + str(character.repetition_penalty) + "\n" + "Max Length: " + str(character.max_new_len), color=discord.Color.blue())
         await interaction.channel.send(embed=embed)
-        convo = "\n".join(user.currentCharacter.conversation)
+        convo = "\n".join(character.conversation)
         if (len(convo) > 4000):
             embed = discord.Embed(title="Conversation History I", description=convo[0:4000], color=discord.Color.blue())
             await interaction.channel.send(embed=embed)

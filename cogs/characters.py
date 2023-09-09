@@ -87,6 +87,7 @@ class Characters(commands.Cog):
             
     # Links the modal above to a slash command
     @app_commands.command(name = "create_character", description = "Create a new character. Simply give a name, icon, and description/profile.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def create_character_command(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
@@ -98,6 +99,7 @@ class Characters(commands.Cog):
         await interaction.response.send_modal(self.CreateCharacterModal())
 
     @app_commands.command(name = "quick_create_character", description = "Create a new character without the popup menu.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def quick_create_character_command(self, interaction : discord.Interaction, name : str, icon : str = "https://cdn.discordapp.com/embed/avatars/0.png", profile : str = ""):
         user = data.get_user(interaction.user.id)
 
@@ -202,6 +204,7 @@ class Characters(commands.Cog):
     
     # Links the above modal to a slash command
     @app_commands.command(name = "config", description = "Configure your character's properties, like temperature, length, etc.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def config_command(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         await interaction.response.send_modal(self.ConfigModal(user.currentCharacter))
@@ -238,6 +241,7 @@ class Characters(commands.Cog):
 
     # Links the above modal to a slash command
     @app_commands.command(name = "edit_profile", description = "Edit your current character's profile. This gives it its personality.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def edit_profile(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
@@ -283,6 +287,7 @@ class Characters(commands.Cog):
 
     # Links the above view to a slash command
     @app_commands.command(name = "change_model", description = "Change the AI LLM model used to generate character outputs")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def change_model(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         view = self.ChangeModelView(self, user.currentCharacter)
@@ -337,6 +342,7 @@ class Characters(commands.Cog):
 
     # Links the above view to a slash command
     @app_commands.command(name = "delete_character", description = "Delete a character. This cannot be undone! (Though you can just remake it.)")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def delete_character(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         if len(user.characters) < 2:

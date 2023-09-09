@@ -22,7 +22,7 @@ def init(Log_stream : StringIO):
 
     # Store extensions, that is command groups to be loaded into the bot
     global extensions
-    extensions = ["cogs.management", "cogs.memory", "cogs.messaging", "cogs.characters", "cogs.generics", "cogs.channels"]
+    extensions = ["cogs.management", "cogs.memory", "cogs.messaging", "cogs.characters", "cogs.generics", "cogs.threads"]
     global skip
     skip = []
 
@@ -33,11 +33,8 @@ def init(Log_stream : StringIO):
     global log_stream
     log_stream = Log_stream
 
-    global guildCat
-    guildCat = {}
-
-    global channelChar
-    channelChar = {}
+    global threadChar
+    threadChar = {}
 
     global LLMModels
     LLMModels = []
@@ -55,6 +52,8 @@ def get_user(userid : int) -> model.User:
 # Gets a webhook to send model messages through. If none is found, then create a new one
 # This should NOT be called in dms, it will break
 async def get_webhook(channel : discord.TextChannel, character : model.Character) -> discord.Webhook:
+    if isinstance(channel, discord.Thread):
+        channel = channel.parent
     global webhookChannels
     if channel not in webhookChannels:
         webhookChannels[channel] = {}

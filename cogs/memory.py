@@ -16,6 +16,7 @@ class Memory(commands.Cog):
         self.bot = bot
     
     @app_commands.command(name = "clear_memory", description = "Clear character memory. Lost memory cannot be restored!")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def clear_memory(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         user.currentCharacter.lastQuestion = ""
@@ -25,6 +26,7 @@ class Memory(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name = "delete_last_interaction", description = "Delete the last pair of messages (your query and the bots response) from memory.")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def delete_last_interaction(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
         user.currentCharacter.lastQuestion = ""
@@ -69,6 +71,7 @@ class Memory(commands.Cog):
 
     # Links the above view to a slash command
     @app_commands.command(name = "change_memory_mode", description = "Set whether or not the character remembers new conversations")
+    @app_commands.checks.bot_has_permissions(embed_links=True)
     async def change_mode(self, interaction : discord.Interaction):
         user = data.get_user(interaction.user.id)
 
