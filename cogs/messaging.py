@@ -223,10 +223,6 @@ class Messaging(commands.Cog):
                     break
         except:
             return None
-        logging.info("--PROMPT--")
-        logging.info(userCharacterPrompt)
-        logging.info("--RESPONSE--")
-        logging.info(response["reply"])
         # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
         response["reply"] = response["reply"][len(userCharacterPrompt) + 1:-1]
         found1 = re.search("user.{0,60}:", response["reply"].lower())
@@ -242,8 +238,6 @@ class Messaging(commands.Cog):
             response["reply"] = response["reply"][:realFound]
         if len(response["reply"]) == 0:
             response["reply"] = "(silence)"
-        logging.info("--RESPONSE FILTERED--")
-        logging.info(response["reply"])
         if (threadCharacter.memory == True):
             userStr = ""
             if query != "":
