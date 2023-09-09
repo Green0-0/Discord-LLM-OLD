@@ -121,11 +121,15 @@ class Messaging(commands.Cog):
     @app_commands.command(name = "retry_last_interaction", description = "Retry the last query you sent the AI and get a different result.")
     @app_commands.checks.bot_has_permissions(manage_webhooks=True, embed_links=True)
     async def retry_last_interaction(self, interaction : discord.Interaction):
+        if interaction.channel in data.threadChar:
+            embed = discord.Embed(description="This cannot be done here!.", color=discord.Color.yellow())
+            await interaction.response.send_message(embed=embed)
+            return
         user = data.get_user(interaction.user.id)
         # Checks if the user has a stored question
         if user.currentCharacter.lastQuestion != "":
             # Make sure stored question matches conversation history, otherwise conversation character count might get messed up when undoing history
-            if user.currentCharacter.conversation[-2] == f"USER: {user.currentCharacter.lastQuestion}":
+            if user.currentCharacter.conversation[-2] == f"User: {user.currentCharacter.lastQuestion}":
                 user.currentCharacter.currentConversationCharacters -= len(user.currentCharacter.conversation.pop()) + len(user.currentCharacter.conversation.pop())
                 await interaction.response.defer()
                 async with interaction.channel.typing():
