@@ -17,6 +17,10 @@ class Threads(commands.Cog):
     @app_commands.command(name = "create_thread", description = "Create a new character thread with your currently selected character.")
     @app_commands.checks.bot_has_permissions(embed_links=True, manage_threads=True)
     async def create_thread(self, interaction : discord.Interaction):
+        if isinstance(interaction.channel, discord.Thread):
+            embed = discord.Embed(description="This cannot be done in a thread!", color=discord.Color.yellow())
+            await interaction.response.send_message(embed=embed)
+            return
         if isinstance(interaction.channel, discord.DMChannel):
             embed = discord.Embed(description="This cannot be done in DMs!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
@@ -28,7 +32,7 @@ class Threads(commands.Cog):
                             multiUser=True)
         c.setProfile(user.currentCharacter.profile)
 
-        embed = discord.Embed(title=f"Thread for {c.name}", description=f"Note: All slash commands besides \\delete_thread, \\view_current_character, and \\reply_as_current will not do anything in this thread!", color=discord.Color.blue())
+        embed = discord.Embed(title=f"Thread for {c.name}", description=f"Note: All slash commands besides /delete_thread, /view_current_character, /clear_memory and /reply_as_current will not do anything in this thread!", color=discord.Color.blue())
         msg = await interaction.channel.send(embed=embed)
         thread = CharacterThread(await msg.create_thread(name="Chat with " + c.name),
                                     interaction.user, c)

@@ -51,9 +51,10 @@ class Generics(commands.Cog):
         /get_character_suggestions - get suggestions for how to improve your character profile!
         /shorten_character_profile - shorten your character profile
 
+        There are also some heavily experimental commands that allow you to create conversation channels with a bot, where multiple users (or even characters you have) can talk to a bot.
         /create_thread - create a thread for talking to one specific character with other users
         /delete_thread - delete a thread you made
-        /reply_as_current - reply to a character thread with your currently selected character 
+        /reply_as_current - reply to a character thread with your currently selected character. You can also send a query here to be added to the convo before the character replies.
 
         Notes:
         Be warned that if the bot is turned off for some reason all your character data will disappear, if you write any dedicated characters make sure to save them in a text file somewhere.
