@@ -178,7 +178,12 @@ class Messaging(commands.Cog):
                 await interaction.response.send_message(embed=embed)
                 return
             threadCharacter : model.Character = data.threadChar[interaction.channel].character
-            await interaction.response.defer()
+            outputStr1 = f"{interaction.user.display_name} asks {userCharacter.name} to reply"
+            if query != "":
+                outputStr1 += f" with \"{query}\""
+            outputStr1 += "\nWaiting for LLM response..."
+            embed = discord.Embed(description=outputStr1, color=discord.Color.green())
+            await interaction.response.send_message(embed=embed)
             response = await self.requestToBot(userCharacter, threadCharacter, interaction.user.display_name, query)
             if response == None:
                 embed = discord.Embed(description="Connection error. Try in a few seconds. (This message and the above question will not be saved in memory).", color=discord.Color.yellow())
