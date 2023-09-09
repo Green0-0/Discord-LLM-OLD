@@ -51,6 +51,10 @@ class Generics(commands.Cog):
         /get_character_suggestions - get suggestions for how to improve your character profile!
         /shorten_character_profile - shorten your character profile
 
+        /create_thread - create a thread for talking to one specific character with other users
+        /delete_thread - delete a thread you made
+        /reply_as_current - reply to a character thread with your currently selected character 
+
         Notes:
         Be warned that if the bot is turned off for some reason all your character data will disappear, if you write any dedicated characters make sure to save them in a text file somewhere.
         If the bot doesn't respond to a command or fails an interaction or doesn't update your character info, report it as a bug, if the bot simply takes a long time to reply to you it probably isn't an issue related to the bot.

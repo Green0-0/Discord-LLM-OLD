@@ -178,55 +178,60 @@ class Messaging(commands.Cog):
                 await interaction.response.send_message(embed=embed)
                 return
             threadCharacter : model.Character = data.threadChar[interaction.channel].character
-            userCharacterPrompt = (userCharacter.multiUserSystemPrompt + " " + userCharacter.profile).replace("CHARACTER", userCharacter.name) + " " + " ".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserSystemPrompt.replace("USER", threadCharacter.name)) + (" " if len(threadCharacter.conversation) > 0 else "") + f"{userCharacter.name}:"
-            # Create a JSON message with the parameters
-            command = {
-                'message': userCharacterPrompt,
-                'temperature': userCharacter.temperature,
-                'top_p':userCharacter.top_p,
-                'top_k':userCharacter.top_k,
-                'repetition_penalty':userCharacter.repetition_penalty,
-                'max_new_len':userCharacter.max_new_len,
-                'seed':userCharacter.seed,
-                'raw' :str(True)
-            }
-            # Attempt to get AI response
-            tries = 5
-            try:
-                count=0
-                while(count<tries):
-                    count+=1
-                    response=self.send(command)
-                    if int(response["errorcode"])==0:
-                        embed = discord.Embed(description="Connection error. Try in a few seconds. (This message and the above question will not be saved in memory).", color=discord.Color.yellow())
-                        await interaction.response.send_message(embed=embed)
-                        return
-            except:
-                embed = discord.Embed(description="Connection error. Try in a few seconds. (This message and the above question will not be saved in memory).", color=discord.Color.yellow())
-                await interaction.response.send_message(embed=embed)
-                return
-            # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
-            logging.info(response)
-            response["reply"] = response["reply"][len(userCharacterPrompt) + 1:-1]
-            found1 = re.search("user.{0,60}:", response["reply"].lower())
-            found2 = response["reply"].lower().find(f"{userCharacter.name}:".lower())
-            if (found1 or found2 != -1):
-                realFound : int
-                if not found1:
-                    realFound = found2
-                elif found2 == -1:
-                    realFound = found1.start()
-                else:
-                    realFound = min(found1.start(), found2)
-                response["reply"] = response["reply"][:realFound]
-            if len(response["reply"]) == 0:
-                response["reply"] = "(silence)"
             await interaction.response.defer()
-            logging.send(response["reply"])
-            send_message_as_character(interaction.channel, response, userCharacter)
-            threadCharacter.lastQuestion = response["reply"]
-            response2 = await threadCharacter.request(userCharacter.name, response["reply"])
-            logging.send(response2)
+            response = await self.requestToBot(userCharacter, threadCharacter)
+            if response == None:
+                embed = discord.Embed(description="Connection error. Try in a few seconds. (This message and the above question will not be saved in memory).", color=discord.Color.yellow())
+                await interaction.channel.send(embed=embed)
+                return
+            await send_message_as_character(interaction.channel, response, userCharacter)
+            threadCharacter.lastQuestion = response
+            response2 = await threadCharacter.request(userCharacter.name, response)
             await send_message_as_character(interaction.channel, response2, threadCharacter)
         else:
             embed = discord.Embed(description="This can only be done in character threads!", color=discord.Color.yellow())
+            await interaction.response.send_message(embed=embed)
+
+    @model.to_thread
+    def requestToBot(self, userCharacter : model.Character, threadCharacter : model.Character):
+        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + " " + userCharacter.profile).replace("CHARACTER", userCharacter.name) + " " + " ".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserSystemPrompt.replace("USER", threadCharacter.name)) + (" " if len(threadCharacter.conversation) > 0 else "") + f"{userCharacter.name}:"
+        # Create a JSON message with the parameters
+        command = {
+            'message': userCharacterPrompt,
+            'temperature': userCharacter.temperature,
+            'top_p':userCharacter.top_p,
+            'top_k':userCharacter.top_k,
+            'repetition_penalty':userCharacter.repetition_penalty,
+            'max_new_len':userCharacter.max_new_len,
+            'seed':userCharacter.seed,
+            'raw' :str(True)
+        }
+        
+        # Attempt to get AI response
+        tries = 5
+        try:
+            count=0
+            while(count<tries):
+                count+=1
+                response=userCharacter.send(command)
+                if int(response["errorcode"])==0:
+                    break
+        except:
+            return None
+        # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
+        response["reply"] = response["reply"][len(userCharacterPrompt) + 1:-1]
+        found1 = re.search("user.{0,60}:", response["reply"].lower())
+        found2 = response["reply"].lower().find(f"{userCharacter.name}:".lower())
+        if (found1 or found2 != -1):
+            realFound : int
+            if not found1:
+                realFound = found2
+            elif found2 == -1:
+                realFound = found1.start()
+            else:
+                realFound = min(found1.start(), found2)
+            response["reply"] = response["reply"][:realFound]
+        if len(response["reply"]) == 0:
+            response["reply"] = "(silence)"
+        return response["reply"]
+        

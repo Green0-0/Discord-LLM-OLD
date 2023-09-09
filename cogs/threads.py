@@ -15,7 +15,7 @@ class Threads(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name = "create_thread", description = "Create a new character thread with your currently selected character.")
-    @app_commands.checks.bot_has_permissions(embed_links=True)
+    @app_commands.checks.bot_has_permissions(embed_links=True, manage_threads=True)
     async def create_thread(self, interaction : discord.Interaction):
         if isinstance(interaction.channel, discord.DMChannel):
             embed = discord.Embed(description="This cannot be done in DMs!", color=discord.Color.yellow())
@@ -36,7 +36,7 @@ class Threads(commands.Cog):
         await interaction.response.send_message("Done!")
 
     @app_commands.command(name = "delete_thread", description = "Delete a character thread (you can only do this to your own character thread).")
-    @app_commands.checks.bot_has_permissions(embed_links=True)
+    @app_commands.checks.bot_has_permissions(embed_links=True, manage_threads=True)
     async def delete_channel(self, interaction : discord.Interaction):
         if not interaction.channel in data.threadChar:
             embed = discord.Embed(description="Thread not found!", color=discord.Color.yellow())

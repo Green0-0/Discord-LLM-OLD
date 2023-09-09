@@ -18,11 +18,20 @@ class Memory(commands.Cog):
     @app_commands.command(name = "clear_memory", description = "Clear character memory. Lost memory cannot be restored!")
     @app_commands.checks.bot_has_permissions(embed_links=True)
     async def clear_memory(self, interaction : discord.Interaction):
-        user = data.get_user(interaction.user.id)
-        user.currentCharacter.lastQuestion = ""
-        user.currentCharacter.conversation = []
-        user.currentCharacter.currentConversationCharacters = 0
-        embed = discord.Embed(description=f"Cleared {user.currentCharacter.name}'s memory!", color=discord.Color.red())
+        if interaction.channel in data.threadChar:
+            if not (interaction.user == data.threadChar[interaction.channel].owner or interaction.user in data.admins or await self.bot.is_owner(interaction.user)):
+                embed = discord.Embed(description="You do not own this thread nor have permissions to clear its memory!", color=discord.Color.yellow())
+                await interaction.response.send_message(embed=embed)
+                return
+            character = data.threadChar[interaction.channel].character
+        else:
+            user = data.get_user(interaction.user.id) 
+            character = user.currentCharacter
+        
+        character.lastQuestion = ""
+        character.conversation = []
+        character.currentConversationCharacters = 0
+        embed = discord.Embed(description=f"Cleared {character.name}'s memory!", color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name = "delete_last_interaction", description = "Delete the last pair of messages (your query and the bots response) from memory.")

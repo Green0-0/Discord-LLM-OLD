@@ -42,7 +42,7 @@ async def on_app_command_error(
         s += "The bot is missing embed link permissions in this server!\n"
     if not interaction.guild.get_member(bot.user.id).guild_permissions.manage_webhooks:
         s += "The bot is missing webhook permissions in this server!\n"
-    if not interaction.guild.get_member(bot.user.id).guild_permissions.manage_channels:
+    if not interaction.guild.get_member(bot.user.id).guild_permissions.manage_threads:
         s += "The bot is missing channel edit permissions in this server!\n"
     await interaction.response.send_message(s)
     
