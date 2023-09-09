@@ -16,7 +16,7 @@ class LLM (commands.Bot):
     async def setup_hook(self):
         logging.info("Bot is starting")
         await bot.load_extension("cogs.generics")
-        #await self.tree.sync()
+        await self.tree.sync()
 
 # Sets up bot
 intents = discord.Intents.default()

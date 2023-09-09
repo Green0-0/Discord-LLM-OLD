@@ -116,7 +116,7 @@ class Generics(commands.Cog):
         await interaction.channel.send("Finished loading extensions")
         await interaction.channel.send("Syncing slash commands")
         try:
-            #await self.bot.tree.sync()
+            await self.bot.tree.sync()
             pass
         except Exception as e:
             await interaction.channel.send("**Error syncing slash commands:** ```" + str(e) + "```")
@@ -141,9 +141,11 @@ class Generics(commands.Cog):
                 for webhook in w:
                     if webhook.user == self.bot.user:
                         await webhook.delete()
-        data.webhookChannels = {}
+                data.webhookChannels = {key:val for key, val in data.webhookChannels.items() if key.guild != guild}
         if s != "":
             await interaction.channel.send(s)
+        else:
+            data.webhookChannels = {}
         logging.info(s)
         await interaction.channel.send("Finished purging webhooks")
 
