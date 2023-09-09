@@ -7,9 +7,13 @@ To run the bot, simply download the code and paste the token for a bot in the to
 To use the bot, either use /help to get a list of commands (the commands are self explanatory), or ping the bot to talk.
 
 Example character thread (Note: The AI's beliefs are not reflective of my own)
+
 ![multiagent](https://github.com/Green0-0/Discord-LLM/assets/138409197/60d439bf-51fd-4d79-8bd6-c44e7fe0ee89)
 
+
 Example creating characters
+
 ![charactercreation](https://github.com/Green0-0/Discord-LLM/assets/138409197/1d3b5134-06c5-49e6-9ab6-5d0524f51b05)
+
 
 Note: The bot is unstable as the latest update with character threads changed a lot of the code, more testing is needed.
