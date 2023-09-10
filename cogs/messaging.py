@@ -98,8 +98,8 @@ class Messaging(commands.Cog):
             return
         user = data.get_user(message.author.id)
 
-        text = message.content.split()
-        textClean = message.clean_content.split()
+        text = message.content.split(" ")
+        textClean = message.clean_content.split(" ")
         if self.bot.user.mention == text[0]:
             async with message.channel.typing():
                 if message.channel in data.threadChar:
@@ -200,7 +200,7 @@ class Messaging(commands.Cog):
 
     @model.to_thread
     def requestToBot(self, userCharacter : model.Character, threadCharacter : model.Character, username : str, query : str):
-        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + " " + userCharacter.profile).replace("CHARACTER", userCharacter.name) + " " + " ".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserUserPrompt.replace("USER", threadCharacter.name)) + (" " if len(threadCharacter.conversation) > 0 else "") 
+        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + " " + userCharacter.profile).replace("CHARACTER", userCharacter.name) + " " + " ".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserUserPrompt.replace("USER", threadCharacter.name)).replace(userCharacter.multiUserUserPrompt.replace("USER", userCharacter.name), f"{userCharacter.name}:") + (" " if len(threadCharacter.conversation) > 0 else "") 
         if query != "":
             userCharacterPrompt += userCharacter.multiUserUserPrompt.replace("USER", username) + " " + query
         userCharacterPrompt += f" {userCharacter.name}:"
