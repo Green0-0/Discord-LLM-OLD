@@ -200,10 +200,10 @@ class Messaging(commands.Cog):
 
     @model.to_thread
     def requestToBot(self, userCharacter : model.Character, threadCharacter : model.Character, username : str, query : str):
-        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + " " + userCharacter.profile).replace("CHARACTER", userCharacter.name) + " " + " ".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserUserPrompt.replace("USER", threadCharacter.name)).replace(userCharacter.multiUserUserPrompt.replace("USER", userCharacter.name), f"{userCharacter.name}:") + (" " if len(threadCharacter.conversation) > 0 else "") 
+        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + "\n" + userCharacter.profile).replace("CHARACTER", userCharacter.name) + "\n" + "\n".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserUserPrompt.replace("USER", threadCharacter.name)).replace(userCharacter.multiUserUserPrompt.replace("USER", userCharacter.name), f"{userCharacter.name}:") + ("\n" if len(threadCharacter.conversation) > 0 else "") 
         if query != "":
-            userCharacterPrompt += userCharacter.multiUserUserPrompt.replace("USER", username) + " " + query
-        userCharacterPrompt += f" {userCharacter.name}:"
+            userCharacterPrompt += userCharacter.multiUserUserPrompt.replace("USER", username) + " " + query + "\n"
+        userCharacterPrompt += f"{userCharacter.name}:"
         # Create a JSON message with the parameters
         command = {
             'message': userCharacterPrompt,
@@ -228,6 +228,7 @@ class Messaging(commands.Cog):
         except:
             return None
         # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
+        logging.info(response["reply"])
         response["reply"] = response["reply"][len(userCharacterPrompt) + 1:-1]
         found1 = re.search("user.{0,60}:", response["reply"].lower())
         found2 = response["reply"].lower().find(f"{userCharacter.name}:".lower())
@@ -239,7 +240,7 @@ class Messaging(commands.Cog):
                 realFound = found1.start()
             else:
                 realFound = min(found1.start(), found2)
-            response["reply"] = response["reply"][:realFound]
+            response["reply"] = response["reply"][:realFound - 1]
         if len(response["reply"]) == 0:
             response["reply"] = "(silence)"
         if (threadCharacter.memory == True):

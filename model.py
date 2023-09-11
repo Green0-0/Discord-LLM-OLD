@@ -1,3 +1,4 @@
+import logging
 import socket
 import json
 import http.client
@@ -125,8 +126,9 @@ class Character:
             else:
                 realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
                 realUserPrompt = realUserPrompt.replace("USER", username) + " " + prompt
+                realUserPrompt += "\n"
             realSystemPrompt = self.multiUserSystemPrompt if self.multiUser else self.systemPrompt
-            finalPrompt = (realSystemPrompt + " " + self.profile).replace("CHARACTER", self.name).replace("USER", username) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"{realUserPrompt} {self.name}:"
+            finalPrompt = (realSystemPrompt + "\n" + self.profile).replace("CHARACTER", self.name).replace("USER", username) + "\n" + "\n".join(self.conversation) + ("\n" if len(self.conversation) > 0 else "") + f"{realUserPrompt}{self.name}:"
 
         # Create a JSON message with the parameters
         command = {
@@ -151,6 +153,7 @@ class Character:
         except:
             return "Connection error. Try in a few seconds. (This message and the above question will not be saved in memory)"
         # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
+        logging.info(response["reply"])
         if (responded == True):
             if (self.name != "Text Completion"):
                 response["reply"] = response["reply"][len(finalPrompt) + 1:-1]
@@ -164,7 +167,7 @@ class Character:
                         realFound = found1.start()
                     else:
                         realFound = min(found1.start(), found2)
-                    response["reply"] = response["reply"][:realFound]
+                    response["reply"] = response["reply"][:realFound - 1]
                 if len(response["reply"]) == 0:
                     response["reply"] = "(silence)"
             if (self.memory == True):
