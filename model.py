@@ -61,7 +61,7 @@ class Character:
     systemPrompt = "A chat between a user named USER and CHARACTER."
     multiUserSystemPrompt = "A chat between multiple users and CHARACTER."
     userPrompt = "User:"
-    multiUserUserPrompt = "User (username=USER):"
+    multiUserUserPrompt = "User \"USER\":"
     
     # Name of the character
     name : str
@@ -120,8 +120,11 @@ class Character:
         if (self.name == "Text Completion"):
             finalPrompt = prompt
         else:
-            realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
-            realUserPrompt = realUserPrompt.replace("USER", username) + " " + prompt
+            if (prompt == "" or prompt == None or prompt == " ") and self.multiUser == True:
+                realUserPrompt = ""
+            else:
+                realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
+                realUserPrompt = realUserPrompt.replace("USER", username) + " " + prompt
             realSystemPrompt = self.multiUserSystemPrompt if self.multiUser else self.systemPrompt
             finalPrompt = (realSystemPrompt + " " + self.profile).replace("CHARACTER", self.name).replace("USER", username) + " " + " ".join(self.conversation) + (" " if len(self.conversation) > 0 else "") + f"{realUserPrompt} {self.name}:"
 
@@ -165,11 +168,14 @@ class Character:
                 if len(response["reply"]) == 0:
                     response["reply"] = "(silence)"
             if (self.memory == True):
-                realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
-                realUserPrompt = realUserPrompt.replace("USER", username) + " " + prompt
-                userStr = realUserPrompt
+                if (prompt == "" or prompt == None or prompt == " ") and self.multiUser == True:
+                    userStr = ""
+                else:
+                    realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
+                    realUserPrompt = realUserPrompt.replace("USER", username) + " " + prompt
+                    userStr = realUserPrompt
+                    self.conversation.append(userStr)
                 responseStr = f"{self.name}: {response['reply']}"
-                self.conversation.append(userStr)
                 self.conversation.append(responseStr)
                 self.currentConversationCharacters += len(userStr) + len(responseStr)
                 # culls old convo to fit in new convo
