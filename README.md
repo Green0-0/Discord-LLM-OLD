@@ -6,8 +6,7 @@ To run the bot, simply download the code and paste the token for a bot in the to
 
 To use the bot, either use /help to get a list of commands (the commands are self explanatory), or ping the bot to talk.
 
-Examples:
-Basic functionality:
+Examples of basic functionality:
 
 ![image](https://github.com/Green0-0/Discord-LLM/assets/138409197/ea23e408-5fa5-4827-bb55-c330709491a1)
 ![image](https://github.com/Green0-0/Discord-LLM/assets/138409197/23a824a9-5647-4f78-9a6f-09c83de6f72c)
