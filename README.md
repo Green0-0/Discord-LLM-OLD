@@ -21,3 +21,6 @@ Example character thread (Note: The AI's beliefs are not reflective of my own):
 Example of character creation:
 
 ![charactercreation](https://github.com/Green0-0/Discord-LLM/assets/138409197/1d3b5134-06c5-49e6-9ab6-5d0524f51b05)
+
+Warning:
+Editing the system prompt as this bot does will significantly decrease both alignment and truthfulness. The content generated may be wrong, toxic, biased, or harmful. As with any LLM, nothing AI generated should be taken seriously, at least without significant fact checking. You, and you alone are liable for the outputs the AI models generate.
