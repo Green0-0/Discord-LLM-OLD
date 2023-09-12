@@ -6,14 +6,19 @@ To run the bot, simply download the code and paste the token for a bot in the to
 
 To use the bot, either use /help to get a list of commands (the commands are self explanatory), or ping the bot to talk.
 
-Example character thread (Note: The AI's beliefs are not reflective of my own)
+Examples:
+Basic functionality:
 
-![multiagent](https://github.com/Green0-0/Discord-LLM/assets/138409197/60d439bf-51fd-4d79-8bd6-c44e7fe0ee89)
+![image](https://github.com/Green0-0/Discord-LLM/assets/138409197/ea23e408-5fa5-4827-bb55-c330709491a1)
+![image](https://github.com/Green0-0/Discord-LLM/assets/138409197/23a824a9-5647-4f78-9a6f-09c83de6f72c)
+
+Example character thread (Note: The AI's beliefs are not reflective of my own):
+
+![image](https://github.com/Green0-0/Discord-LLM/assets/138409197/8ee22300-2ad0-4472-bdfa-59d2766f8cf9)
+![image](https://github.com/Green0-0/Discord-LLM/assets/138409197/e70b82d6-ce39-49d5-a9c8-5ca388f5990b)
+![image](https://github.com/Green0-0/Discord-LLM/assets/138409197/cf7de5db-2956-4be6-85be-8bbcce7a4bed)
 
 
-Example creating characters
+Example of character creation:
 
 ![charactercreation](https://github.com/Green0-0/Discord-LLM/assets/138409197/1d3b5134-06c5-49e6-9ab6-5d0524f51b05)
-
-
-Note: The bot is unstable as the latest update with character threads changed a lot of the code, more testing is needed.
