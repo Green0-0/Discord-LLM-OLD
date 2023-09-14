@@ -122,7 +122,7 @@ class Messaging(commands.Cog):
     @app_commands.checks.bot_has_permissions(manage_webhooks=True, embed_links=True)
     async def retry_last_interaction(self, interaction : discord.Interaction):
         if interaction.channel in data.threadChar:
-            embed = discord.Embed(description="This cannot be done here!.", color=discord.Color.yellow())
+            embed = discord.Embed(description="This cannot be done here!", color=discord.Color.yellow())
             await interaction.response.send_message(embed=embed)
             return
         user = data.get_user(interaction.user.id)
@@ -130,7 +130,8 @@ class Messaging(commands.Cog):
         if user.currentCharacter.lastQuestion != "":
             # Make sure stored question matches conversation history, otherwise conversation character count might get messed up when undoing history
             if user.currentCharacter.conversation[-2] == f"User: {user.currentCharacter.lastQuestion}":
-                user.currentCharacter.currentConversationCharacters -= len(user.currentCharacter.conversation.pop()) + len(user.currentCharacter.conversation.pop())
+                user.currentCharacter.conversation.pop()
+                user.currentCharacter.conversation.pop()
                 await interaction.response.defer()
                 async with interaction.channel.typing():
                     # Respond to the user message
@@ -200,9 +201,9 @@ class Messaging(commands.Cog):
 
     @model.to_thread
     def requestToBot(self, userCharacter : model.Character, threadCharacter : model.Character, username : str, query : str):
-        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + "\n" + userCharacter.profile).replace("CHARACTER", userCharacter.name) + "\n" + "\n".join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserUserPrompt.replace("USER", threadCharacter.name)).replace(userCharacter.multiUserUserPrompt.replace("USER", userCharacter.name), f"{userCharacter.name}:") + ("\n" if len(threadCharacter.conversation) > 0 else "") 
+        userCharacterPrompt = (userCharacter.multiUserSystemPrompt + userCharacter.seperator + userCharacter.profile).replace("CHARACTER", userCharacter.name) + userCharacter.seperator + userCharacter.seperator.join(threadCharacter.conversation).replace(f"{threadCharacter.name}:", userCharacter.multiUserUserPrompt.replace("USER", threadCharacter.name)).replace(userCharacter.multiUserUserPrompt.replace("USER", userCharacter.name), f"{userCharacter.name}:") + (userCharacter.seperator if len(threadCharacter.conversation) > 0 else "") 
         if query != "":
-            userCharacterPrompt += userCharacter.multiUserUserPrompt.replace("USER", username) + " " + query + "\n"
+            userCharacterPrompt += userCharacter.multiUserUserPrompt.replace("USER", username) + " " + query + userCharacter.seperator
         userCharacterPrompt += f"{userCharacter.name}:"
         # Create a JSON message with the parameters
         command = {
@@ -250,9 +251,6 @@ class Messaging(commands.Cog):
                 threadCharacter.conversation.append(userStr)
             responseStr = threadCharacter.multiUserUserPrompt.replace("USER", userCharacter.name) + " " + response['reply']
             threadCharacter.conversation.append(responseStr)
-            threadCharacter.currentConversationCharacters += len(userStr) + len(responseStr)
-            # culls old convo to fit in new convo
-            while threadCharacter.currentConversationCharacters > threadCharacter.model.contextLength:
-                threadCharacter.currentConversationCharacters -= len(threadCharacter.conversation.pop(0)) + len(threadCharacter.conversation.pop(0))
+            threadCharacter.cleanMemory()
         return response["reply"]
         

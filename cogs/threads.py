@@ -32,7 +32,7 @@ class Threads(commands.Cog):
                             multiUser=True)
         c.setProfile(user.currentCharacter.profile)
 
-        embed = discord.Embed(title=f"Thread for {c.name}", description=f"Note: All slash commands besides /delete_thread, /view_current_character, /clear_memory and /reply_as_current will not do anything in this thread!", color=discord.Color.blue())
+        embed = discord.Embed(title=f"Thread for {c.name}", description=f"Note: All slash commands besides /delete_thread, /view_current_character, /clear_memory, /delete_last_interaction and /reply_as_current will not do anything in this thread!", color=discord.Color.blue())
         msg = await interaction.channel.send(embed=embed)
         thread = CharacterThread(await msg.create_thread(name="Chat with " + c.name),
                                     interaction.user, c)

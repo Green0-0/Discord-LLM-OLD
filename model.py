@@ -5,6 +5,7 @@ import http.client
 import ssl
 import re 
 import data
+import sentencepiece
 
 # Stores user information
 class User:
@@ -63,6 +64,7 @@ class Character:
     multiUserSystemPrompt = "A chat between multiple users and CHARACTER."
     userPrompt = "User:"
     multiUserUserPrompt = "User \"USER\":"
+    seperator = " "
     
     # Name of the character
     name : str
@@ -84,7 +86,7 @@ class Character:
     memory:bool= True
 
     def __init__(self, id,  name, icon, model,
-                 memory = True, seed = 0, temperature = 1.0, top_p = 0.95, top_k = 50, repetition_penalty = 1.2, max_new_len = 1500, multiUser=False,
+                 memory = True, seed = 0, temperature = 1.0, top_p = 0.95, top_k = 50, repetition_penalty = 1.5, max_new_len = 500, multiUser=False,
                  server_address="api.neuroengine.ai",server_port=443,key="",verify_ssl=True):
         self.id = id
         self.name = name
@@ -107,7 +109,7 @@ class Character:
         self.conversation = []
 
     def setProfile(self, profile):
-        self.profile = profile.replace("\n", " ")
+        self.profile = profile.replace("\n", self.seperator)
 
     # Gets the model response
     @to_thread
@@ -126,9 +128,9 @@ class Character:
             else:
                 realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
                 realUserPrompt = realUserPrompt.replace("USER", username) + " " + prompt
-                realUserPrompt += "\n"
+                realUserPrompt += self.seperator
             realSystemPrompt = self.multiUserSystemPrompt if self.multiUser else self.systemPrompt
-            finalPrompt = (realSystemPrompt + "\n" + self.profile).replace("CHARACTER", self.name).replace("USER", username) + "\n" + "\n".join(self.conversation) + ("\n" if len(self.conversation) > 0 else "") + f"{realUserPrompt}{self.name}:"
+            finalPrompt = (realSystemPrompt + self.seperator + self.profile).replace("CHARACTER", self.name).replace("USER", username) + self.seperator + self.seperator.join(self.conversation) + (self.seperator if len(self.conversation) > 0 else "") + f"{realUserPrompt}{self.name}:"
 
         # Create a JSON message with the parameters
         command = {
@@ -180,11 +182,25 @@ class Character:
                     self.conversation.append(userStr)
                 responseStr = f"{self.name}: {response['reply']}"
                 self.conversation.append(responseStr)
-                self.currentConversationCharacters += len(userStr) + len(responseStr)
-                # culls old convo to fit in new convo
-                while self.currentConversationCharacters > self.model.contextLength:
-                    self.currentConversationCharacters -= len(self.conversation.pop(0)) + len(self.conversation.pop(0))
+                self.cleanMemory()
         return response["reply"]
+    
+    def cleanMemory(self):
+        usernameMax = "!@#$%^&*()!@#$%^!@#$%^&*()!1938#"
+        realUserPrompt = self.multiUserUserPrompt if self.multiUser else self.userPrompt
+        realUserPrompt = realUserPrompt.replace("USER", usernameMax) + " "
+        realUserPrompt += self.seperator
+        realSystemPrompt = self.multiUserSystemPrompt if self.multiUser else self.systemPrompt
+        finalPrompt = (realSystemPrompt + self.seperator + self.profile).replace("CHARACTER", self.name).replace("USER", usernameMax) + self.seperator + self.seperator.join(self.conversation) + (self.seperator if len(self.conversation) > 0 else "") + f"{realUserPrompt}{self.name}:"
+        currentConversationTokens = self.countTokens(finalPrompt) + self.max_new_len
+        while currentConversationTokens > self.model.contextLength and len(self.conversation) > 0:
+            currentConversationTokens -= self.countTokens(self.conversation.pop(0))
+
+    def countTokens(self, prompt):
+        sp = sentencepiece.SentencePieceProcessor(model_file='tokenizer.model')
+        prompt_tokens = sp.encode_as_ids(prompt)
+        logging.info("TOKEN COUNT: " + str(len(prompt_tokens)))
+        return len(prompt_tokens)
 
     def send(self,command):
         json_data = json.dumps(command)

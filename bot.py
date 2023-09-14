@@ -28,7 +28,7 @@ bot = LLM(command_prefix="", intents=intents, help_command=None)
 async def on_ready():
     if bot.shown_warning == False: 
         bot.shown_warning = True
-        await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Activity(type=discord.ActivityType.watching, name="/reload must be used by an admin before this bot does anything!"))
+        await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Activity(type=discord.ActivityType.watching, name="/reload MUST BE USED BY A BOT ADMIN/OWNER!"))
     logging.info(f'Logged in as {bot.user}, begin using the bot!')
 
 @bot.tree.error

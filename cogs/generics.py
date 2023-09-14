@@ -14,9 +14,9 @@ class Generics(commands.Cog):
     def __init__(self, bot : commands.Bot):
         self.bot = bot
         Airoboros70b = model.LLMModel("Airoboros-70b", "Best model.", 3000, "Neuroengine-Large")
-        Airoboros33b = model.LLMModel("Airoboros-33b", "Fast conversational model.", 6000, "Neuroengine-Fast")
+        Airoboros33b = model.LLMModel("Airoboros-33b", "Fast conversational model.", 7000, "Neuroengine-Fast")
         Jesus = model.LLMModel("Jesus", "Talk with a llama-13b model finetuned on the bible.", 3000, "Neuroengine-Jesus")
-        CodeLlama = model.LLMModel("Codellama", "Good for coding.", 6000, "CodeLLama")
+        CodeLlama = model.LLMModel("Codellama", "Good for coding.", 7000, "CodeLLama")
         data.LLMModels = [Airoboros70b, Jesus, CodeLlama, Airoboros33b]
 
     async def is_admin(self, interaction : discord.Interaction) -> bool:
@@ -25,10 +25,10 @@ class Generics(commands.Cog):
     @app_commands.command(name = "help", description = "Displays all available commands.")
     async def help(self, interaction : discord.Interaction):
         embed = discord.Embed(title="Help Page", description=
-        """ This is a bot that allows you to use and talk to an LLM. You can ask it for help or simply have conversations with it. 
+        f""" This is a bot that allows you to use and talk to an LLM. You can ask it for help or simply have conversations with it. 
         One main trait of this bot is the existence of **characters.** A character is simply a profile given to the bot, which the bot acts out. 
         There are four sample characters besides the defaults for each LLM model: Joe Biden (Joke), Donald Trump, (Joke), Stack (Chain-of-thought coding), Commentator (Uncensored political/controversial discussion)
-        To get a response from the bot, simply mention it!
+        **To get a response from the bot, simply mention it (@{self.bot.user.name})!**
         To create, edit, and manage your characters, use the following commands:
 
         /help - displays this message
@@ -106,7 +106,7 @@ class Generics(commands.Cog):
         if not await self.is_admin(interaction):
             await interaction.response.send_message("You do not have permission to use this command.")
             return
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name="Use /help to get an introduction to the bot and a list of commands. Ping the bot to talk!"))
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name=f"/help for commands, mention @{self.bot.user.name} to talk!"))
         await interaction.response.send_message("Preparing to reload")
         await interaction.channel.send("Loading extensions")
         for extension in data.extensions:

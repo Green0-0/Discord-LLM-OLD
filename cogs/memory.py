@@ -30,21 +30,32 @@ class Memory(commands.Cog):
         
         character.lastQuestion = ""
         character.conversation = []
-        character.currentConversationCharacters = 0
         embed = discord.Embed(description=f"Cleared {character.name}'s memory!", color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name = "delete_last_interaction", description = "Delete the last pair of messages (your query and the bots response) from memory.")
     @app_commands.checks.bot_has_permissions(embed_links=True)
     async def delete_last_interaction(self, interaction : discord.Interaction):
-        user = data.get_user(interaction.user.id)
-        user.currentCharacter.lastQuestion = ""
-        if len(user.currentCharacter.conversation) > 0:
-            b = user.currentCharacter.conversation.pop()
-            u = user.currentCharacter.conversation.pop()
-            user.currentCharacter.currentConversationCharacters -= len(b) + len(u)
-            embed = discord.Embed(title=f"Deleted the following interaction in {user.currentCharacter.name}'s memory:",
-                                  description=f"{u}\n{b}", color=discord.Color.red())
+        if interaction.channel in data.threadChar:
+            if not (interaction.user == data.threadChar[interaction.channel].owner or interaction.user in data.admins or await self.bot.is_owner(interaction.user)):
+                embed = discord.Embed(description="You do not own this thread nor have permissions to delete its memory!", color=discord.Color.yellow())
+                await interaction.response.send_message(embed=embed)
+                return
+            character = data.threadChar[interaction.channel].character
+        else:
+            user = data.get_user(interaction.user.id) 
+            character = user.currentCharacter
+        character.lastQuestion = ""
+        if len(character.conversation) > 0:
+            if interaction.channel in data.threadChar:
+                l = character.conversation.pop()
+                embed = discord.Embed(title=f"Deleted the following message in {character.name}'s memory:",
+                                    description=f"{l}", color=discord.Color.red())
+            else:
+                b = character.conversation.pop()
+                u = character.conversation.pop()
+                embed = discord.Embed(title=f"Deleted the following interaction in {character.name}'s memory:",
+                                    description=f"{u}\n{b}", color=discord.Color.red())
             await interaction.response.send_message(embed=embed)
         else:
             embed = discord.Embed(description="No interactions found!", color=discord.Color.yellow())

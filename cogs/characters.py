@@ -43,13 +43,20 @@ class Characters(commands.Cog):
         async def on_submit(self, interaction : discord.Interaction):
             # On the extremely rare chance the user pops open two tabs and tries to make two characters at once to break the limit...
             user = data.get_user(interaction.user.id)
+            
             if (len(user.characters) > 24):
                 embed = discord.Embed(description="You have reached the character limit! Please delete a character before creating a new one.", color=discord.Color.yellow())
                 await interaction.response.send_message(embed=embed)
                 embed = discord.Embed(title="Failed to create character " + self.name.value, description="Character description: " + self.profile.value, color=discord.Color.yellow())
                 await interaction.channel.send(embed=embed)
                 return
-        
+
+            # There is a limit to the amount of characters you can put in a username
+            if (len(self.name.value) > 31):
+                embed = discord.Embed(description="Discord names have a character limit of 32.", color=discord.Color.yellow())
+                await interaction.response.send_message(embed=embed)
+                return
+            
             # Checks if the icon URL is valid
             try:
                 r = requests.head(self.icon.value)
@@ -109,6 +116,12 @@ class Characters(commands.Cog):
             await interaction.response.send_message(embed=embed)
             embed = discord.Embed(title="Failed to create character " + name, description="Character description: " + profile, color=discord.Color.yellow())
             await interaction.channel.send(embed=embed)
+            return
+        
+        # There is a limit to the amount of characters you can put in a username
+        if (len(name) > 31):
+            embed = discord.Embed(description="Discord names have a character limit of 32.", color=discord.Color.yellow())
+            await interaction.response.send_message(embed=embed)
             return
         
         # Checks if the icon URL is valid

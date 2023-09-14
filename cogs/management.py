@@ -36,7 +36,7 @@ class Management(commands.Cog):
                 return
 
             user.currentCharacter = user.characters[int(self.values[0])]
-            if user.currentCharacter.currentConversationCharacters == 0:
+            if len(user.currentCharacter.conversation) == 0:
                 embed = discord.Embed(title=user.currentCharacter.name, description=f"Begin a new conversation with {user.currentCharacter.name} by mentioning the bot with @LLM!", color=discord.Color.blue())
                 embed.set_author(name="Selected")
                 embed.set_thumbnail(url=user.currentCharacter.icon)
@@ -88,10 +88,13 @@ class Management(commands.Cog):
         await interaction.channel.send(embed=embed)
         convo = "\n".join(character.conversation)
         if (len(convo) > 4000):
-            embed = discord.Embed(title="Conversation History I", description=convo[0:4000], color=discord.Color.blue())
-            await interaction.channel.send(embed=embed)
-            embed = discord.Embed(title="Conversation History II", description=convo[4000:], color=discord.Color.blue())
-            await interaction.channel.send(embed=embed)
+            # write to file
+            with open("Conversation_History.txt", "w") as file:
+                file.write(convo)
+            
+            # send file to Discord in message
+            with open("Conversation_History.txt", "rb") as file:
+                await interaction.channel.send("Conversation History:", file=discord.File(file, "Conversation_History.txt"))
         else:
             embed = discord.Embed(title="Conversation History", description=convo, color=discord.Color.blue())
             await interaction.channel.send(embed=embed)
