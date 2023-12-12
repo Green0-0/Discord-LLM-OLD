@@ -131,7 +131,7 @@ class Character:
                 realUserPrompt += self.seperator
             realSystemPrompt = self.multiUserSystemPrompt if self.multiUser else self.systemPrompt
             finalPrompt = (realSystemPrompt + self.seperator + self.profile).replace("CHARACTER", self.name).replace("USER", username) + self.seperator + self.seperator.join(self.conversation) + (self.seperator if len(self.conversation) > 0 else "") + f"{realUserPrompt}{self.name}:"
-
+        logging.info("\n+++QUERY+++\n" + finalPrompt)
         # Create a JSON message with the parameters
         command = {
             'message': finalPrompt,
@@ -151,14 +151,18 @@ class Character:
                 count+=1
                 response=self.send(command)
                 if int(response["errorcode"])==0:
+                        logging.info("+++break+++")
                         break
         except:
             return "Connection error. Try in a few seconds. (This message and the above question will not be saved in memory)"
         # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
-        logging.info(response["reply"])
+        logging.info("\n+++FULL+++\n")
+        logging.info(response)
+        logging.info("\n+++PREPROCESS+++\n" + response["reply"])
         if (responded == True):
             if (self.name != "Text Completion"):
                 response["reply"] = response["reply"][len(finalPrompt) + 1:-1]
+                logging.info("\n+++REPLY+++\n" + response["reply"])
                 found1 = re.search("user.{0,60}:", response["reply"].lower())
                 found2 = response["reply"].lower().find(f"{self.name}:".lower())
                 if (found1 or found2 != -1):
@@ -170,6 +174,7 @@ class Character:
                     else:
                         realFound = min(found1.start(), found2)
                     response["reply"] = response["reply"][:realFound - 1]
+                logging.info("\n+++SLICED+++\n" + response["reply"])
                 if len(response["reply"]) == 0:
                     response["reply"] = "(silence)"
             if (self.memory == True):
@@ -183,6 +188,7 @@ class Character:
                 responseStr = f"{self.name}: {response['reply']}"
                 self.conversation.append(responseStr)
                 self.cleanMemory()
+        logging.info("\n+++RESULT+++\n" + response["reply"])
         return response["reply"]
     
     def cleanMemory(self):
