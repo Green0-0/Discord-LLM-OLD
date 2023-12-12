@@ -13,10 +13,10 @@ class Generics(commands.Cog):
 
     def __init__(self, bot : commands.Bot):
         self.bot = bot
-        Goliath = model.LLMModel("Goliath", "Best model.", 3000, "Neuroengine-Large")
-        Mixtral = model.LLMModel("Mixtral", "Experimental model.", 10000, "Mixtral-7b-8expert")
+        Goliath = model.LLMModel("Goliath", "Best model.", 1500, "Neuroengine-Large")
+        Mixtral = model.LLMModel("Mixtral", "Experimental model.", 5000, "Mixtral-7b-8expert")
         Jesus = model.LLMModel("Jesus", "Talk with a llama-13b model finetuned on the bible.", 3000, "Neuroengine-Jesus")
-        Mistral_OpenOrca = model.LLMModel("Mistral-OpenOrca", "Fastest model.", 7000, "Neuroengine-Fast")
+        Mistral_OpenOrca = model.LLMModel("Mistral-OpenOrca", "Fastest model.", 3000, "Neuroengine-Fast")
         data.LLMModels = [Goliath, Mixtral, Jesus, Mistral_OpenOrca]
 
     async def is_admin(self, interaction : discord.Interaction) -> bool:

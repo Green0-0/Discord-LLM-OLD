@@ -205,6 +205,7 @@ class Messaging(commands.Cog):
         if query != "":
             userCharacterPrompt += userCharacter.multiUserUserPrompt.replace("USER", username) + " " + query + userCharacter.seperator
         userCharacterPrompt += f"{userCharacter.name}:"
+        logging.info("\n+++QUERY+++\n" + userCharacterPrompt)
         # Create a JSON message with the parameters
         command = {
             'message': userCharacterPrompt,
@@ -225,12 +226,15 @@ class Messaging(commands.Cog):
                 count+=1
                 response=userCharacter.send(command)
                 if int(response["errorcode"])==0:
+                    logging.info("+++break+++")
                     break
         except:
+            logging.info("+++error+++")
             return None
         # Assuming there was a response, format the response and store it response in memory if the mode is conversational 
-        logging.info(response["reply"])
+        logging.info("\n+++PREPROCESS+++\n" + response["reply"])
         response["reply"] = response["reply"][len(userCharacterPrompt) + 1:-1]
+        logging.info("\n+++REPLY+++\n" + response["reply"])
         found1 = re.search("user.{0,60}:", response["reply"].lower())
         found2 = response["reply"].lower().find(f"{userCharacter.name}:".lower())
         if (found1 or found2 != -1):
@@ -242,8 +246,10 @@ class Messaging(commands.Cog):
             else:
                 realFound = min(found1.start(), found2)
             response["reply"] = response["reply"][:realFound - 1]
+        logging.info("\n+++SLICED+++\n" + response["reply"])
         if len(response["reply"]) == 0:
             response["reply"] = "(silence)"
+        logging.info("\n+++RESULT+++\n" + response["reply"])
         if (threadCharacter.memory == True):
             userStr = ""
             if query != "":
