@@ -13,11 +13,11 @@ class Generics(commands.Cog):
 
     def __init__(self, bot : commands.Bot):
         self.bot = bot
-        Airoboros70b = model.LLMModel("Airoboros-70b", "Best model.", 3000, "Neuroengine-Large")
-        Airoboros33b = model.LLMModel("Airoboros-33b", "Fast conversational model.", 7000, "Neuroengine-Fast")
+        Goliath = model.LLMModel("Goliath", "Best model.", 3000, "Neuroengine-Large")
+        Mixtral = model.LLMModel("Mixtral", "Experimental model.", 10000, "Mixtral-7b-8expert")
         Jesus = model.LLMModel("Jesus", "Talk with a llama-13b model finetuned on the bible.", 3000, "Neuroengine-Jesus")
-        CodeLlama = model.LLMModel("Codellama", "Good for coding.", 7000, "CodeLLama")
-        data.LLMModels = [Airoboros70b, Jesus, CodeLlama, Airoboros33b]
+        Mistral_OpenOrca = model.LLMModel("Mistral-OpenOrca", "Fastest model.", 7000, "Neuroengine-Fast")
+        data.LLMModels = [Goliath, Mixtral, Jesus, Mistral_OpenOrca]
 
     async def is_admin(self, interaction : discord.Interaction) -> bool:
         return interaction.user in data.admins or await self.bot.is_owner(interaction.user)
