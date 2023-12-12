@@ -50,12 +50,6 @@ class Characters(commands.Cog):
                 embed = discord.Embed(title="Failed to create character " + self.name.value, description="Character description: " + self.profile.value, color=discord.Color.yellow())
                 await interaction.channel.send(embed=embed)
                 return
-
-            # There is a limit to the amount of characters you can put in a username
-            if (len(self.name.value) > 31):
-                embed = discord.Embed(description="Discord names have a character limit of 32.", color=discord.Color.yellow())
-                await interaction.response.send_message(embed=embed)
-                return
             
             # Checks if the icon URL is valid
             try:
@@ -116,12 +110,6 @@ class Characters(commands.Cog):
             await interaction.response.send_message(embed=embed)
             embed = discord.Embed(title="Failed to create character " + name, description="Character description: " + profile, color=discord.Color.yellow())
             await interaction.channel.send(embed=embed)
-            return
-        
-        # There is a limit to the amount of characters you can put in a username
-        if (len(name) > 31):
-            embed = discord.Embed(description="Discord names have a character limit of 32.", color=discord.Color.yellow())
-            await interaction.response.send_message(embed=embed)
             return
         
         # Checks if the icon URL is valid
