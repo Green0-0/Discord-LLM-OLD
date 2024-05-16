@@ -1,3 +1,6 @@
+OUTDATED, SEE https://github.com/Green0-0/Discord-LLM-v2
+
+
 # Discord-LLM
 Runs a LLM using the API from https://www.neuroengine.ai/. 
 This is my best attempt at making a comprehensive UI for LLMs on a discord bot, similar to those found in popular webUIs. The main feature in this bot is the creation of characters, which contains a profile that is injected into the bot's system prompt. Dropdowns and modals are used to make the bot user-friendly and sleek. Characters send messages through webhooks, which contain an avatar and name for the character, so the bot can pretend to be different users during roleplay. There is also the ability to turn a character into a conversation thread, where multiple users can talk to one character in a unique discord channel. In this thread, a user can also ask another character they have made to respond to the character in the thread.
